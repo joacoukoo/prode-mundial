@@ -22,6 +22,10 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   title: "Prode Mundialista 2026",
   description: "50 participantes. 72 partidos. Un solo campeón. ¿Quién la tiene más clara?",
+  icons: {
+    icon: "/emblem.png",
+    apple: "/emblem.png",
+  },
   openGraph: {
     title: "Participá del Prode Mundialista 2026",
     description: "50 participantes. 72 partidos. Un solo campeón.",
