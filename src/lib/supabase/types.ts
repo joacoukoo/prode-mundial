@@ -39,6 +39,26 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["predictions"]["Insert"]>;
         Relationships: never[];
       };
+      special_predictions: {
+        Row: {
+          id: string;
+          user_id: string;
+          champion: string;
+          top_scorer: string;
+          best_player: string;
+          best_goalkeeper: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          champion: string;
+          top_scorer: string;
+          best_player: string;
+          best_goalkeeper: string;
+        };
+        Update: never;
+        Relationships: never[];
+      };
       messages: {
         Row: {
           id: string;
@@ -70,6 +90,17 @@ export interface Database {
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Prediction = Database["public"]["Tables"]["predictions"]["Row"];
 export type MatchResult = Database["public"]["Tables"]["match_results"]["Row"];
+
+export interface SpecialPrediction {
+  id: string;
+  user_id: string;
+  champion: string;
+  top_scorer: string;
+  best_player: string;
+  best_goalkeeper: string;
+  created_at: string;
+  profiles: Pick<Profile, "display_name" | "avatar_color" | "avatar_url" | "username">;
+}
 
 export interface ChatMessage {
   id: string;
