@@ -35,17 +35,17 @@ export function useSpecialPredictions() {
   }
 
   async function save(champion: string, top_scorer: string, best_player: string, best_goalkeeper: string) {
-    if (!isOpen || mine) return;
+    if (!isOpen) return;
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("special_predictions").insert({
+      await supabase.from("special_predictions").upsert({
         user_id: user.id,
         champion,
         top_scorer,
         best_player,
         best_goalkeeper,
-      });
+      }, { onConflict: "user_id" });
       await fetchAll();
     }
     setSaving(false);

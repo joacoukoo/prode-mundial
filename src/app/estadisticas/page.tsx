@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSpecialPredictions } from "@/hooks/useSpecialPredictions";
 import { useAuth } from "@/context/AuthContext";
@@ -40,6 +40,17 @@ export default function EstadisticasPage() {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    if (mine) {
+      setForm({
+        champion: mine.champion,
+        top_scorer: mine.top_scorer,
+        best_player: mine.best_player,
+        best_goalkeeper: mine.best_goalkeeper,
+      });
+    }
+  }, [mine]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.champion || !form.top_scorer || !form.best_player || !form.best_goalkeeper) return;
@@ -65,13 +76,15 @@ export default function EstadisticasPage() {
           </div>
         </div>
 
-        {/* Form — solo si no predijo todavía y el torneo no empezó */}
-        {!loading && profile && isOpen && !mine && !submitted && (
+        {/* Form — disponible mientras el torneo no empezó */}
+        {!loading && profile && isOpen && (
           <div className="glass rounded-2xl border border-border p-6">
             <div className="flex items-center gap-2 mb-5">
-              <span className="text-sm font-semibold text-primary">¿Cuáles son tus picks?</span>
+              <span className="text-sm font-semibold text-primary">
+                {mine ? "Tus picks — podés modificarlos" : "¿Cuáles son tus picks?"}
+              </span>
               <span className="text-xs text-muted-foreground bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-                Cierra el 11 Jun antes del primer partido
+                Se bloquean el 11 Jun al inicio del primer partido
               </span>
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -111,19 +124,19 @@ export default function EstadisticasPage() {
                 disabled={saving}
                 className="mt-2 w-full py-3 rounded-xl font-heading font-bold text-lg bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
-                {saving ? <><Loader2 size={18} className="animate-spin" /> Guardando...</> : <><CheckCircle2 size={18} /> Guardar mis picks</>}
+                {saving ? <><Loader2 size={18} className="animate-spin" /> Guardando...</> : mine ? <><CheckCircle2 size={18} /> Actualizar picks</> : <><CheckCircle2 size={18} /> Guardar mis picks</>}
               </button>
             </form>
           </div>
         )}
 
         {/* Confirmación post-envío */}
-        {(submitted || mine) && isOpen && (
+        {submitted && isOpen && (
           <div className="glass rounded-2xl border border-primary/30 bg-primary/5 p-5 flex items-center gap-3">
             <CheckCircle2 className="text-primary flex-shrink-0" size={22} />
             <div>
-              <p className="font-semibold text-sm">¡Picks guardados! Ya no se pueden modificar.</p>
-              <p className="text-xs text-muted-foreground mt-0.5">El 11 de junio se revelan los de todos.</p>
+              <p className="font-semibold text-sm">¡Picks guardados!</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Podés modificarlos hasta el 11 de junio.</p>
             </div>
           </div>
         )}

@@ -56,7 +56,12 @@ export interface Database {
           best_player: string;
           best_goalkeeper: string;
         };
-        Update: never;
+        Update: {
+          champion?: string;
+          top_scorer?: string;
+          best_player?: string;
+          best_goalkeeper?: string;
+        };
         Relationships: never[];
       };
       messages: {
