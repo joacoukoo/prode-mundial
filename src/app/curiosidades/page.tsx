@@ -102,6 +102,106 @@ const CURIOSIDADES = [
     titulo: "El jugador más joven",
     texto: "Norman Whiteside (Irlanda del Norte) debutó en un Mundial en 1982 con 17 años y 41 días, superando el récord de Pelé.",
   },
+  {
+    emoji: "🧱",
+    titulo: "El partido sin goles más largo",
+    texto: "En el Mundial 2014, Algeria y Rusia empataron 1-1 pero el partido con mayor posesión sin convertir fue Francia vs Suiza (0-0 en 120 minutos en 2006) antes de la definición por penales.",
+  },
+  {
+    emoji: "🏟️",
+    titulo: "El estadio más grande",
+    texto: "El Estadio Azteca de Ciudad de México es el único recinto que albergó dos finales de Copa del Mundo: 1970 (Brasil vs Italia) y 1986 (Argentina vs Alemania). En 2026 será sede otra vez.",
+  },
+  {
+    emoji: "🔴",
+    titulo: "La expulsión más rápida",
+    texto: "José Batista (Uruguay) recibió la tarjeta roja más rápida en la historia de los Mundiales: al minuto 1 del partido ante Escocia en México 1986.",
+  },
+  {
+    emoji: "🎰",
+    titulo: "El penal que nunca fue",
+    texto: "En la final de 2022, el árbitro cobró un penal a Francia sobre el tiempo extra. Mbappé convirtió y fue el tercer gol francés. Argentina igualmente ganó en los penales.",
+  },
+  {
+    emoji: "👴",
+    titulo: "El jugador más viejo",
+    texto: "Faryd Mondragón (Colombia) se convirtió en el jugador más veterano en disputar un Mundial: 43 años y 3 días, en Brasil 2014 ante Japón.",
+  },
+  {
+    emoji: "🇮🇹",
+    titulo: "El arquero que no fue goleado",
+    texto: "Walter Zenga (Italia) mantuvo su valla invicta durante 517 minutos en el Mundial 1990. Un récord que nunca fue batido.",
+  },
+  {
+    emoji: "⚡",
+    titulo: "Hat-trick en final",
+    texto: "Geoff Hurst (Inglaterra) es el único jugador en la historia en marcar un hat-trick en una final de Copa del Mundo. Fue en 1966 ante Alemania Occidental (4-2).",
+  },
+  {
+    emoji: "🌧️",
+    titulo: "El partido bajo la lluvia",
+    texto: "El famoso 'Partido del Siglo' entre Italia y Alemania Occidental en México 1970 terminó 4-3 después del alargue. Fue elegido el mejor partido de la historia del Mundial por la FIFA.",
+  },
+  {
+    emoji: "🤦",
+    titulo: "El autogol más desafortunado",
+    texto: "Andrés Escobar (Colombia) marcó un autogol en el Mundial 1994. Días después de regresar a Colombia, fue asesinado. Una de las tragedias más oscuras del fútbol mundial.",
+  },
+  {
+    emoji: "🐙",
+    titulo: "El pulpo adivino",
+    texto: "Paul el Pulpo predijo correctamente los 8 partidos de Alemania en el Mundial 2010, incluyendo la final que ganó España. Se convirtió en el animal más famoso del planeta por semanas.",
+  },
+  {
+    emoji: "🏅",
+    titulo: "El único jugador con dos Mundiales",
+    texto: "Lothar Matthäus (Alemania) jugó un récord de 25 partidos de Copa del Mundo en cinco torneos distintos (1982, 1986, 1990, 1994 y 1998). Ganó el de 1990.",
+  },
+  {
+    emoji: "🎭",
+    titulo: "La mayor goleada",
+    texto: "La mayor goleada en la historia del Mundial fue Hungary 10 - El Salvador 1 en el Mundial de España 1982. László Kiss metió hat-trick en solo 7 minutos saliendo desde el banco.",
+  },
+  {
+    emoji: "🇩🇰",
+    titulo: "El debut perfecto",
+    texto: "Dinamarca ganó todos sus partidos en su debut mundialista en México 1986. Luego fue eliminada por España 5-1. Praeludiet y Laudrup brillaron en ese torneo único.",
+  },
+  {
+    emoji: "🤜",
+    titulo: "El cabezazo que cambió todo",
+    texto: "Zinedine Zidane recibió la tarjeta roja en la final de 2006 por un cabezazo a Marco Materazzi. Francia perdió esa final por penales. Zidane nunca explicó del todo qué le dijo Materazzi.",
+  },
+  {
+    emoji: "🌍",
+    titulo: "África en el podio",
+    texto: "Marruecos 2022 fue el primer equipo africano en llegar a semifinales de un Mundial. Eliminó a España, Portugal y casi a Francia antes de caer ante los galos.",
+  },
+  {
+    emoji: "🇸🇰",
+    titulo: "El golazo en el último segundo",
+    texto: "Robert Vittek igualó para Eslovaquia ante Italia en el minuto 89 del Mundial 2010. Eslovaquia ganó 3-2 y eliminó al campeón defensor en la fase de grupos.",
+  },
+  {
+    emoji: "🎯",
+    titulo: "Los penales malditos",
+    texto: "Inglaterra nunca ha ganado una definición por penales en un Mundial. Perdieron en 1990, 1998, 2006 y 2022. En 2018 ganaron su primer penal en Mundiales tras 28 años.",
+  },
+  {
+    emoji: "🇯🇵",
+    titulo: "La limpieza japonesa",
+    texto: "Japón dejó limpio su vestuario y entregó bolsas de basura con notas de agradecimiento en cada Mundial desde 2014. En Qatar 2022 dejaron el vestuario más limpio que encontraron.",
+  },
+  {
+    emoji: "🦅",
+    titulo: "El icono de 1970",
+    texto: "La Adidas Telstar, la pelota del Mundial 1970 en México, fue la primera en ser negra y blanca. Se diseñó así para que se viera mejor en televisión en blanco y negro.",
+  },
+  {
+    emoji: "🇺🇾",
+    titulo: "El gol del nuevo mundo",
+    texto: "El primer gol de la historia de los Mundiales lo marcó Lucien Laurent (Francia) ante México el 13 de julio de 1930. Francia ganó 4-1, aunque ambos quedaron eliminados en la fase de grupos.",
+  },
 ];
 
 export default function CuriosidadesPage() {
