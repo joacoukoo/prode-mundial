@@ -16,8 +16,6 @@ interface MatchCardProps {
   index?: number;
 }
 
-const GUATEMALA_TZ = "America/Guatemala";
-
 export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCardProps) {
   const matchDate = new Date(match.date);
   const now = new Date();
@@ -27,8 +25,12 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
   const isLive = match.status === "live";
   const canPredict = !isPastDeadline && !isFinished && !isLive;
 
-  const dateStr = formatInTimeZone(matchDate, GUATEMALA_TZ, "EEE d 'de' MMM", { locale: es });
-  const timeStr = formatInTimeZone(matchDate, GUATEMALA_TZ, "HH:mm", { locale: es });
+  const userTZ = typeof window !== "undefined"
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "America/Guatemala";
+
+  const dateStr = formatInTimeZone(matchDate, userTZ, "EEE d 'de' MMM", { locale: es });
+  const timeStr = formatInTimeZone(matchDate, userTZ, "HH:mm", { locale: es });
 
   const cardBorder =
     isLive      ? "border-accent/60 shadow-[0_0_24px_rgba(34,229,114,0.18)]" :
@@ -126,7 +128,7 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-        <span className="text-xs text-muted-foreground capitalize">{dateStr} · {timeStr} hs GT</span>
+        <span className="text-xs text-muted-foreground capitalize">{dateStr} · {timeStr} hs</span>
         <span className="text-xs text-muted-foreground truncate max-w-[130px] text-right">{match.city}</span>
       </div>
     </motion.div>

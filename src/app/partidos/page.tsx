@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { MatchCard } from "@/components/MatchCard";
 import { MATCHES } from "@/lib/data/matches";
 import { GROUPS, getTeamsByGroup } from "@/lib/data/teams";
-import { CalendarDays, Clock, Filter } from "lucide-react";
+import { CalendarDays, Clock, Filter, Globe } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 import { usePredictions } from "@/hooks/usePredictions";
 import { useLiveMatches } from "@/hooks/useLiveMatches";
@@ -35,12 +35,21 @@ function GroupTab({ group, active, onClick }: { group: string; active: boolean; 
   );
 }
 
+function useUserTimezone() {
+  const [tz, setTz] = useState<string>("");
+  useEffect(() => {
+    setTz(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }, []);
+  return tz;
+}
+
 export default function PartidosPage() {
   const [activeFilter, setActiveFilter] = useState<"jornada" | "grupo">("jornada");
   const [selectedMatchday, setSelectedMatchday] = useState(1);
   const [selectedGroup, setSelectedGroup] = useState("A");
   const { savePrediction, getPrediction } = usePredictions();
   const { matches: liveMatches, isLiveNow, apiConfigured, lastUpdate } = useLiveMatches(MATCHES);
+  const userTZ = useUserTimezone();
 
   const filteredMatches =
     activeFilter === "jornada"
@@ -104,6 +113,14 @@ export default function PartidosPage() {
             </div>
           </div>
         </div>
+
+        {/* Timezone badge */}
+        {userTZ && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-white/5 border border-white/10 px-3 py-2 rounded-xl mb-5 w-fit">
+            <Globe size={13} />
+            Horarios en tu zona: <span className="font-medium text-foreground/80">{userTZ.replace(/_/g, " ")}</span>
+          </div>
+        )}
 
         {/* Filter type toggle */}
         <div className="flex items-center gap-2 mb-5">
