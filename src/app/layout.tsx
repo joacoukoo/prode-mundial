@@ -20,8 +20,18 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Prode Mundial 2026",
-  description: "El prode del Mundial 2026 entre amigos. ¿Quién la tiene más clara?",
+  title: "Prode Mundialista 2026",
+  description: "50 participantes. 72 partidos. Un solo campeón. ¿Quién la tiene más clara?",
+  openGraph: {
+    title: "Participá del Prode Mundialista 2026",
+    description: "50 participantes. 72 partidos. Un solo campeón.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Participá del Prode Mundialista 2026",
+    description: "50 participantes. 72 partidos. Un solo campeón.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
