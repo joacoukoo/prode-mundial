@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Clock, CheckCircle2, Edit2 } from "lucide-react";
 import { useState } from "react";
-import type { Match, Prediction } from "@/lib/types";
+import type { Match } from "@/lib/types";
+import type { Prediction } from "@/lib/supabase/types";
 import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import { CountryFlag } from "./CountryFlag";
@@ -30,10 +31,10 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
   const timeStr = formatInTimeZone(matchDate, GUATEMALA_TZ, "HH:mm", { locale: es });
 
   const cardBorder =
-    isLive      ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.15)]" :
-    prediction  ? "border-primary/40" :
-    canPredict  ? "border-white/10" :
-    "border-white/10";
+    isLive      ? "border-accent/60 shadow-[0_0_24px_rgba(34,229,114,0.18)]" :
+    prediction  ? "border-primary/45 shadow-[0_0_12px_rgba(247,194,42,0.08)]" :
+    canPredict  ? "border-white/10 hover:border-white/20" :
+    "border-white/8";
 
   return (
     <motion.div
@@ -45,10 +46,10 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-muted-foreground bg-white/5 px-2.5 py-1 rounded-full border border-white/10 uppercase tracking-wider">
-            Grupo {match.group}
+          <span className="text-[11px] font-bold text-primary/80 bg-primary/8 px-2.5 py-1 rounded border border-primary/20 uppercase tracking-widest">
+            G {match.group}
           </span>
-          <span className="text-xs text-muted-foreground bg-white/5 px-2 py-1 rounded-full border border-white/10">
+          <span className="text-[11px] font-semibold text-muted-foreground bg-white/5 px-2 py-1 rounded border border-white/8 tracking-wide">
             J{match.matchday}
           </span>
         </div>
@@ -87,14 +88,14 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
         {/* Center */}
         <div className="flex flex-col items-center gap-2 flex-shrink-0 px-1">
           {isFinished || isLive ? (
-            <div className={`flex items-center gap-2 font-heading font-bold text-4xl ${isLive ? "text-green-400" : ""}`}>
-              <span>{match.homeScore ?? 0}</span>
-              <span className={`text-2xl ${isLive ? "text-green-400/50 live-dot" : "text-muted-foreground"}`}>-</span>
-              <span>{match.awayScore ?? 0}</span>
+            <div className={`flex items-center gap-1.5 font-heading text-5xl leading-none ${isLive ? "text-accent" : "text-foreground"}`}>
+              <span className="tabular-nums">{match.homeScore ?? 0}</span>
+              <span className={`text-2xl pb-1 ${isLive ? "text-accent/40 live-dot" : "text-border"}`}>–</span>
+              <span className="tabular-nums">{match.awayScore ?? 0}</span>
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-xs font-heading font-bold text-muted-foreground tracking-[0.2em] mb-0.5">VS</p>
+              <p className="font-heading text-2xl text-muted-foreground/40 tracking-[0.3em] mb-0.5">VS</p>
               <p className="text-xs text-muted-foreground capitalize">{dateStr}</p>
             </div>
           )}
@@ -159,7 +160,7 @@ function PredictionForm({
           <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-xl px-3 py-1.5">
             <CheckCircle2 size={14} className="text-primary flex-shrink-0" />
             <span className="font-mono font-bold text-primary text-lg">
-              {prediction.homeScore} - {prediction.awayScore}
+              {prediction.home_score} - {prediction.away_score}
             </span>
           </div>
           <button
@@ -192,15 +193,15 @@ function PredictionForm({
     >
       {/* Score inputs */}
       <div className="flex items-center gap-2">
-        <ScoreInput name="home" defaultValue={prediction?.homeScore} />
+        <ScoreInput name="home" defaultValue={prediction?.home_score} />
         <span className="text-muted-foreground font-bold text-xl">-</span>
-        <ScoreInput name="away" defaultValue={prediction?.awayScore} />
+        <ScoreInput name="away" defaultValue={prediction?.away_score} />
       </div>
 
       {/* Submit button */}
       <button
         type="submit"
-        className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm hover:bg-gold-dark transition-all shadow-[0_0_12px_rgba(240,180,41,0.2)] hover:shadow-[0_0_20px_rgba(240,180,41,0.35)] active:scale-95"
+        className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-heading text-base tracking-wider hover:bg-gold-dark transition-all shadow-[0_0_16px_rgba(247,194,42,0.25)] hover:shadow-[0_0_24px_rgba(247,194,42,0.4)] active:scale-95"
       >
         <CheckCircle2 size={15} />
         {prediction ? "Actualizar pronóstico" : "Guardar pronóstico"}
@@ -250,7 +251,7 @@ function PredictionResult({ prediction }: { prediction: Prediction }) {
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground">Tu pronóstico:</span>
         <span className="font-mono font-bold text-primary">
-          {prediction.homeScore} - {prediction.awayScore}
+          {prediction.home_score} - {prediction.away_score}
         </span>
       </div>
       {config && (

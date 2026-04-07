@@ -9,12 +9,14 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero banner */}
-      <section className="relative overflow-hidden border-b border-border">
+      <section className="relative overflow-hidden border-b border-primary/20">
         {/* Multi-layer background */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-950/40 via-transparent to-amber-950/30" />
+          {/* Diagonal stripes — ultra/scarf energy */}
+          <div className="absolute inset-0 stripe-accent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-950/50 via-transparent to-amber-950/20" />
           {/* Pitch lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="pitch" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
                 <rect width="80" height="80" fill="none" stroke="white" strokeWidth="0.5"/>
@@ -24,10 +26,10 @@ export default function HomePage() {
             <circle cx="50%" cy="50%" r="120" fill="none" stroke="white" strokeWidth="0.5" />
             <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" strokeWidth="0.5" />
           </svg>
-          {/* Center glow */}
+          {/* Glow — greener, more vivid */}
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full opacity-20 blur-[100px]"
-            style={{ background: "radial-gradient(ellipse, #f0b429 0%, rgba(34,197,94,0.5) 50%, transparent 70%)" }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] rounded-full opacity-25 blur-[90px]"
+            style={{ background: "radial-gradient(ellipse, #f7c22a 0%, rgba(34,229,114,0.45) 50%, transparent 70%)" }}
           />
         </div>
 

@@ -85,13 +85,13 @@ export function Logo({ size = "md", showText = true }: LogoProps) {
 
           <defs>
             <radialGradient id="globeGradient" cx="40%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#1a3a6e" />
-              <stop offset="60%" stopColor="#0d1f3c" />
-              <stop offset="100%" stopColor="#070d1b" />
+              <stop offset="0%" stopColor="#0d2e14" />
+              <stop offset="60%" stopColor="#051a09" />
+              <stop offset="100%" stopColor="#020b04" />
             </radialGradient>
             <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fde68a" />
-              <stop offset="50%" stopColor="#f0b429" />
+              <stop offset="0%" stopColor="#ffe566" />
+              <stop offset="50%" stopColor="#f7c22a" />
               <stop offset="100%" stopColor="#d4930e" />
             </linearGradient>
           </defs>

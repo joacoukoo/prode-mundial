@@ -1,71 +1,38 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
-const STORAGE_KEY = "prode_profile_photos";
-
-function getStoredPhotos(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-// Global in-memory cache so all components re-render when a photo changes
-const listeners = new Set<() => void>();
-function notifyAll() {
-  listeners.forEach((fn) => fn());
-}
-
-export function useProfilePhoto(userId: string) {
-  const [photo, setPhoto] = useState<string | null>(null);
-
-  useEffect(() => {
-    const load = () => setPhoto(getStoredPhotos()[userId] ?? null);
-    load();
-    listeners.add(load);
-    return () => { listeners.delete(load); };
-  }, [userId]);
+export function useProfilePhoto() {
+  const supabase = createClient();
+  const { profile } = useAuth();
 
   const uploadPhoto = useCallback(
-    (file: File) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const stored = getStoredPhotos();
-        stored[userId] = dataUrl;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-        setPhoto(dataUrl);
-        notifyAll();
-      };
-      reader.readAsDataURL(file);
+    async (file: File): Promise<string | null> => {
+      if (!profile) return null;
+
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${profile.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) { console.error(uploadError); return null; }
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${data.publicUrl}?t=${Date.now()}`; // bust cache
+
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", profile.id);
+
+      return url;
     },
-    [userId],
+    [profile, supabase],
   );
 
-  const removePhoto = useCallback(() => {
-    const stored = getStoredPhotos();
-    delete stored[userId];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-    setPhoto(null);
-    notifyAll();
-  }, [userId]);
-
-  return { photo, uploadPhoto, removePhoto };
-}
-
-// Read-only snapshot for the leaderboard (no re-render loop)
-export function useAllProfilePhotos() {
-  const [photos, setPhotos] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const load = () => setPhotos(getStoredPhotos());
-    load();
-    listeners.add(load);
-    return () => { listeners.delete(load); };
-  }, []);
-
-  return photos;
+  return { uploadPhoto };
 }
