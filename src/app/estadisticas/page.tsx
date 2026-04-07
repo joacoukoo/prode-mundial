@@ -158,6 +158,28 @@ export default function EstadisticasPage() {
             <span>Cargando...</span>
           </div>
         )}
+
+        {/* Stats — próximamente */}
+        <div>
+          <h2 className="font-heading font-bold text-xl mb-4">Estadísticas del Prode</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { emoji: "🎯", title: "Exactos por jugador", desc: "¿Quién tiene el ojo más fino?" },
+              { emoji: "📈", title: "Evolución de puntos", desc: "Gráfico jornada a jornada" },
+              { emoji: "🔥", title: "Rachas", desc: "Mejor racha consecutiva de aciertos" },
+              { emoji: "⚽", title: "Partido más acertado", desc: "El resultado que todos vieron venir" },
+              { emoji: "😱", title: "La sorpresa", desc: "El resultado que nadie predijo" },
+              { emoji: "👑", title: "Campeón por jornada", desc: "Ganador de cada jornada" },
+            ].map((card) => (
+              <div key={card.title} className="glass rounded-2xl border border-border p-6 flex flex-col gap-3 opacity-70">
+                <span className="text-4xl">{card.emoji}</span>
+                <h3 className="font-heading font-bold text-lg">{card.title}</h3>
+                <p className="text-sm text-muted-foreground">{card.desc}</p>
+                <span className="text-xs text-primary font-medium mt-auto">Disponible al cierre de la jornada 1</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
