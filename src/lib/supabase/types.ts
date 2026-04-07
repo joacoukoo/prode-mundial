@@ -13,6 +13,7 @@ export interface Database {
           display_name: string;
           avatar_color: string;
           avatar_url: string | null;
+          country: string | null;
           total_points: number;
           correct_results: number;
           correct_winners: number;

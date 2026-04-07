@@ -1,19 +1,35 @@
 "use client";
 
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useAuth } from "@/context/AuthContext";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import { Trophy, Star, Target, Zap, Camera } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { COUNTRIES } from "@/lib/data/countries";
+import { Trophy, Star, Target, Zap, Camera, Check } from "lucide-react";
 
 export default function PerfilPage() {
   const { profile } = useAuth();
   const { players } = useLeaderboard();
+  const [selectedCountry, setSelectedCountry] = useState(profile?.country ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   if (!profile) return null;
 
   const rank = players.findIndex((p) => p.id === profile.id) + 1;
   const total = players.length;
+
+  async function saveCountry() {
+    if (!selectedCountry) return;
+    setSaving(true);
+    const supabase = createClient();
+    await supabase.from("profiles").update({ country: selectedCountry }).eq("id", profile!.id);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -49,6 +65,35 @@ export default function PerfilPage() {
               <span className="text-muted-foreground text-sm">de {total} jugadores</span>
             </div>
           )}
+
+          {/* Country picker */}
+          <div className="w-full max-w-xs flex flex-col gap-2">
+            <label className="text-sm font-medium text-muted-foreground text-center">¿De qué país sos?</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                {selectedCountry && (
+                  <span className={`fi fi-${selectedCountry} absolute left-3 top-1/2 -translate-y-1/2`} style={{ fontSize: 18 }} />
+                )}
+                <select
+                  value={selectedCountry}
+                  onChange={(e) => { setSelectedCountry(e.target.value); setSaved(false); }}
+                  className={`w-full py-2.5 pr-3 rounded-xl bg-white/5 border border-border focus:border-primary focus:outline-none text-sm transition-colors appearance-none ${selectedCountry ? "pl-9" : "pl-3"}`}
+                >
+                  <option value="">Seleccioná un país</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={saveCountry}
+                disabled={!selectedCountry || saving || selectedCountry === profile.country}
+                className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/80 transition-all flex items-center gap-1.5"
+              >
+                {saved ? <><Check size={15} /> Guardado</> : saving ? "..." : "Guardar"}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats grid */}
