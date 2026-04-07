@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
-import { Trophy, CalendarDays, BarChart3, MessageSquare, LogIn, Menu, X, LogOut, User } from "lucide-react";
+import { Trophy, CalendarDays, BarChart3, MessageSquare, Lightbulb, LogIn, Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { PlayerAvatar } from "./PlayerAvatar";
@@ -12,7 +12,8 @@ const navItems = [
   { href: "/",             label: "Tabla",    icon: Trophy },
   { href: "/partidos",     label: "Partidos", icon: CalendarDays },
   { href: "/estadisticas", label: "Stats",    icon: BarChart3 },
-  { href: "/chat",         label: "Chat",     icon: MessageSquare },
+  { href: "/chat",         label: "Chat",       icon: MessageSquare },
+  { href: "/curiosidades", label: "Curiosidades", icon: Lightbulb },
 ];
 
 export function Navbar() {
