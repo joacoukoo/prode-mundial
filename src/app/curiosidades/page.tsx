@@ -19,8 +19,8 @@ const CURIOSIDADES = [
   },
   {
     emoji: "🥅",
-    titulo: "El arquero goleador",
-    texto: "El colombiano René Higuita anotó un gol en el Mundial 1990. Era arquero. Solo atajó 3 partidos pero marcó desde su propio arco con un tiro libre.",
+    titulo: "El arquero más loco",
+    texto: "René Higuita (Colombia) salió de su área a driblear a Roger Milla en el Mundial 1990. Le quitaron la pelota y Camerún anotó para eliminar a Colombia. Uno de los errores más famosos de la historia.",
   },
   {
     emoji: "🌍",
@@ -65,7 +65,7 @@ const CURIOSIDADES = [
   {
     emoji: "🇮🇹",
     titulo: "Campeón dos veces seguidas",
-    texto: "Italia es el único país que ganó dos Mundiales consecutivos: 1934 y 1938. Ambos bajo el régimen de Mussolini, lo que enturbia esas victorias históricamente.",
+    texto: "Italia fue el primer país en ganar dos Mundiales consecutivos: 1934 y 1938. Brasil lo repitió después con 1958 y 1962. Son las únicas dos hazañas consecutivas de la historia.",
   },
   {
     emoji: "😢",
@@ -104,8 +104,8 @@ const CURIOSIDADES = [
   },
   {
     emoji: "🧱",
-    titulo: "El partido sin goles más largo",
-    texto: "En el Mundial 2014, Algeria y Rusia empataron 1-1 pero el partido con mayor posesión sin convertir fue Francia vs Suiza (0-0 en 120 minutos en 2006) antes de la definición por penales.",
+    titulo: "El peor debut de un campeón",
+    texto: "Francia, campeona del mundo en 1998, llegó al Mundial 2002 como máxima favorita. Quedó eliminada en la fase de grupos sin anotar un solo gol en tres partidos. Zidane llegó lesionado.",
   },
   {
     emoji: "🏟️",
@@ -165,7 +165,7 @@ const CURIOSIDADES = [
   {
     emoji: "🇩🇰",
     titulo: "El debut perfecto",
-    texto: "Dinamarca ganó todos sus partidos en su debut mundialista en México 1986. Luego fue eliminada por España 5-1. Praeludiet y Laudrup brillaron en ese torneo único.",
+    texto: "Dinamarca ganó sus tres partidos de la fase de grupos en su debut mundialista en México 1986, anotando 9 goles. Luego fue eliminada en octavos por España 5-1. Laudrup fue la figura.",
   },
   {
     emoji: "🤜",
@@ -184,8 +184,8 @@ const CURIOSIDADES = [
   },
   {
     emoji: "🎯",
-    titulo: "Los penales malditos",
-    texto: "Inglaterra nunca ha ganado una definición por penales en un Mundial. Perdieron en 1990, 1998, 2006 y 2022. En 2018 ganaron su primer penal en Mundiales tras 28 años.",
+    titulo: "La maldición de los penales",
+    texto: "Inglaterra perdió definiciones por penales en los Mundiales de 1990, 1998 y 2006. Recién en 2018 ganaron su primer penal mundialista, ante Colombia, tras 28 años de maldición.",
   },
   {
     emoji: "🇯🇵",
