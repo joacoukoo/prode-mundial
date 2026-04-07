@@ -78,7 +78,7 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
       <div className="flex items-center justify-between gap-2">
         {/* Home */}
         <div className="flex flex-col items-center gap-2.5 flex-1 min-w-0">
-          <CountryFlag flagCode={match.homeTeam.flagCode} countryName={match.homeTeam.name} size="2xl" />
+          <CountryFlag flagCode={match.homeTeam.flagCode} countryName={match.homeTeam.name} size="xl" />
           <div className="text-center">
             <p className="font-heading font-bold text-base leading-tight">{match.homeTeam.shortName}</p>
             <p className="text-xs text-muted-foreground leading-tight truncate max-w-[90px]">{match.homeTeam.name}</p>
@@ -116,7 +116,7 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
 
         {/* Away */}
         <div className="flex flex-col items-center gap-2.5 flex-1 min-w-0">
-          <CountryFlag flagCode={match.awayTeam.flagCode} countryName={match.awayTeam.name} size="2xl" />
+          <CountryFlag flagCode={match.awayTeam.flagCode} countryName={match.awayTeam.name} size="xl" />
           <div className="text-center">
             <p className="font-heading font-bold text-base leading-tight">{match.awayTeam.shortName}</p>
             <p className="text-xs text-muted-foreground leading-tight truncate max-w-[90px]">{match.awayTeam.name}</p>
