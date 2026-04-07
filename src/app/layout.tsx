@@ -26,11 +26,13 @@ export const metadata: Metadata = {
     title: "Participá del Prode Mundialista 2026",
     description: "50 participantes. 72 partidos. Un solo campeón.",
     type: "website",
+    images: [{ url: "/emblem.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Participá del Prode Mundialista 2026",
     description: "50 participantes. 72 partidos. Un solo campeón.",
+    images: ["/emblem.png"],
   },
 };
 
