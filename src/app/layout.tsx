@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Barlow } from "next/font/google";
+import { Oswald, Barlow } from "next/font/google";
 import "./globals.css";
 import "flag-icons/css/flag-icons.min.css";
 import { Toaster } from "sonner";
@@ -12,10 +12,10 @@ const barlow = Barlow({
   display: "swap",
 });
 
-const bebasNeue = Bebas_Neue({
+const oswald = Oswald({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${barlow.variable} ${bebasNeue.variable} h-full`}>
+    <html lang="es" className={`${barlow.variable} ${oswald.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         <AuthProvider>
           {children}

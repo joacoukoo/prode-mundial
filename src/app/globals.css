@@ -52,11 +52,11 @@
 
 :root {
   /* Night pitch — deep forest green darkness */
-  --background: #030b04;
+  --background: #0a1a0c;
   --foreground: #edfff0;
-  --card: rgba(1, 14, 5, 0.88);
+  --card: rgba(10, 28, 12, 0.92);
   --card-foreground: #edfff0;
-  --popover: #061009;
+  --popover: #0d2010;
   --popover-foreground: #edfff0;
   /* Electric gold — brighter, more saturated */
   --primary: #f7c22a;
@@ -109,18 +109,18 @@
     @apply font-sans;
     color-scheme: dark;
   }
-  /* Bebas Neue: all-caps nature, slight positive tracking looks best */
+  /* Oswald: condensed but readable, slight positive tracking */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
   }
 }
 
 /* ── Card / surface ─────────────────────────────────────────────────────────── */
 /* Solid dark — no frosted blur. Feels like a stadium board, not a phone app. */
 .glass {
-  background: rgba(2, 16, 6, 0.90);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(10, 28, 12, 0.90);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .glass-hover {
