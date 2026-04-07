@@ -77,7 +77,7 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
       </div>
 
       {/* Teams row */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-start justify-between gap-2">
         {/* Home */}
         <div className="flex flex-col items-center gap-2.5 flex-1 min-w-0">
           <CountryFlag flagCode={match.homeTeam.flagCode} countryName={match.homeTeam.name} size="xl" />
