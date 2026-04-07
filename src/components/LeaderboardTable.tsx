@@ -166,7 +166,7 @@ export function LeaderboardTable() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {player.country && (
-                      <span className={`fi fi-${player.country} flex-shrink-0`} style={{ fontSize: 14, borderRadius: 2 }} />
+                      <span className={`fi fi-${player.country} flex-shrink-0`} style={{ fontSize: 14, borderRadius: 2, display: "inline-block", verticalAlign: "middle", lineHeight: 1 }} />
                     )}
                     <p className={`font-semibold text-sm truncate leading-tight ${elim && !isLast ? "line-through decoration-orange-500/50 text-muted-foreground/60" : ""}`}>
                       {player.display_name}
