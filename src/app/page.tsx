@@ -50,7 +50,7 @@ export default function HomePage() {
                 DEL MUNDIAL
               </h1>
               <p className="text-muted-foreground text-lg max-w-md mx-auto lg:mx-0 mb-8">
-                50 amigos. 72 partidos. Un solo campeón.
+                50 participantes. 72 partidos. Un solo campeón.
                 ¿Sos el que más sabe de fútbol?
               </p>
 
