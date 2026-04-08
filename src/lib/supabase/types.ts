@@ -14,6 +14,7 @@ export interface Database {
           avatar_color: string;
           avatar_url: string | null;
           country: string | null;
+          is_admin: boolean;
           total_points: number;
           correct_results: number;
           correct_winners: number;
