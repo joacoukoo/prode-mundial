@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Trophy, Star, Target, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { PlayerAvatar } from "./PlayerAvatar";
-import { DonkeyEars } from "./DonkeyEars";
+import { DonkeyFace } from "./DonkeyFace";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/context/AuthContext";
 import type { Profile } from "@/lib/supabase/types";
@@ -134,7 +134,7 @@ export function LeaderboardTable() {
               <div className="flex items-center gap-2.5 min-w-0">
                 <div
                   className="relative flex-shrink-0"
-                  style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, marginTop: isLast ? 10 : rank === 1 ? 12 : 0 }}
+                  style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, marginTop: rank === 1 ? 12 : 0 }}
                 >
                   {rank === 1 && (
                     <motion.span
@@ -145,7 +145,6 @@ export function LeaderboardTable() {
                       👑
                     </motion.span>
                   )}
-                  {isLast && <DonkeyEars avatarSize={AVATAR_SIZE} />}
 
                   <PlayerAvatar
                     userId={player.id}
@@ -175,9 +174,7 @@ export function LeaderboardTable() {
                     {rank === 1 && (
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 hidden sm:inline whitespace-nowrap">líder</span>
                     )}
-                    {isLast && (
-                      <span className="text-xs text-amber-500 bg-amber-900/20 px-1.5 py-0.5 rounded-full border border-amber-700/30 hidden sm:inline whitespace-nowrap">orejas de burro</span>
-                    )}
+                    {isLast && <DonkeyFace size={22} />}
                     {elim && !isLast && (
                       <span className="text-xs text-orange-400/70 bg-orange-900/10 px-1.5 py-0.5 rounded-full border border-orange-800/20 hidden sm:inline whitespace-nowrap" title={`Máximo posible: ${maxPossible} pts`}>
                         sin chances
@@ -209,7 +206,7 @@ export function LeaderboardTable() {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-4 text-xs text-muted-foreground/50 px-1">
-        <span>👑 Líder actual · 🫏 Último lugar</span>
+        <span>👑 Líder actual</span>
         {eliminatedCount > 0 && <span className="text-orange-400/50">{eliminatedCount} sin chances matemáticas</span>}
       </div>
     </div>
