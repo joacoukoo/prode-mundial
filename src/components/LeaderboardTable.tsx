@@ -138,7 +138,7 @@ export function LeaderboardTable() {
                 >
                   {rank === 1 && (
                     <motion.span
-                      className="absolute -top-4 left-1/2 -translate-x-1/2 text-lg pointer-events-none z-10"
+                      className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl pointer-events-none z-10"
                       animate={{ rotate: [-6, 6, -6], y: [0, -2, 0] }}
                       transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                     >
@@ -174,7 +174,7 @@ export function LeaderboardTable() {
                     {rank === 1 && (
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 hidden sm:inline whitespace-nowrap">líder</span>
                     )}
-                    {isLast && <DonkeyFace size={22} />}
+                    {isLast && <DonkeyFace size={44} />}
                     {elim && !isLast && (
                       <span className="text-xs text-orange-400/70 bg-orange-900/10 px-1.5 py-0.5 rounded-full border border-orange-800/20 hidden sm:inline whitespace-nowrap" title={`Máximo posible: ${maxPossible} pts`}>
                         sin chances

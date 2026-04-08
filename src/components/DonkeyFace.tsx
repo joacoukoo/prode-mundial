@@ -1,5 +1,5 @@
 // Carita de burro caricatura — aparece inline al lado del nombre del último
-export function DonkeyFace({ size = 26 }: { size?: number }) {
+export function DonkeyFace({ size = 44 }: { size?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
