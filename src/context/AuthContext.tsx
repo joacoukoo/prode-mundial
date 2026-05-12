@@ -4,14 +4,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 
-const AVATAR_COLORS = [
-  "#f0b429","#22c55e","#3b82f6","#a855f7","#ec4899",
-  "#f97316","#06b6d4","#84cc16","#f43f5e","#8b5cf6",
-];
-
-function randomColor() {
-  return AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-}
 
 // Supabase Auth uses email — we generate a fake internal one from username
 export function usernameToEmail(username: string) {
@@ -69,28 +61,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(username: string, displayName: string, password: string) {
-    // Check username not taken
-    const { data: existing } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", username.toLowerCase().trim())
-      .maybeSingle();
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, displayName, password }),
+    });
+    const { error } = await res.json();
+    if (error) return { error };
 
-    if (existing) return { error: "Ese usuario ya está en uso" };
-
-    const { error } = await supabase.auth.signUp({
+    // Auto sign-in after account creation
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email: usernameToEmail(username),
       password,
-      options: {
-        data: {
-          username: username.toLowerCase().trim(),
-          display_name: displayName.trim(),
-          avatar_color: randomColor(),
-        },
-      },
     });
-
-    return { error: error ? error.message : null };
+    return { error: signInError ? "Cuenta creada, pero no se pudo iniciar sesión automáticamente. Ingresá manualmente." : null };
   }
 
   async function logout() {
