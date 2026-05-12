@@ -7,15 +7,14 @@ const AVATAR_COLORS = [
 ];
 
 export async function POST(req: Request) {
-  const { username, displayName, password } = await req.json();
+  const { username, displayName, email, password } = await req.json();
 
-  if (!username || !displayName || !password) {
+  if (!username || !displayName || !email || !password) {
     return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
   const cleanUsername = username.toLowerCase().trim();
-  const email = `${cleanUsername}@prode2026.app`;
   const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
 
   // Check username availability
@@ -29,11 +28,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Ese usuario ya está en uso" });
   }
 
-  // Create user — email_confirm: true skips email confirmation
+  // Create user — Supabase sends real confirmation email automatically
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email,
+    email: email.trim().toLowerCase(),
     password,
-    email_confirm: true,
     user_metadata: {
       username: cleanUsername,
       display_name: displayName.trim(),
@@ -42,10 +40,13 @@ export async function POST(req: Request) {
   });
 
   if (authError || !authData.user) {
+    if (authError?.message?.toLowerCase().includes("already registered")) {
+      return NextResponse.json({ error: "Ese email ya está registrado" });
+    }
     return NextResponse.json({ error: authError?.message ?? "Error al crear usuario" });
   }
 
-  // Upsert profile (safe whether or not a DB trigger already created it)
+  // Create profile immediately (before email confirmation)
   const { error: profileError } = await supabase
     .from("profiles")
     .upsert({

@@ -4,17 +4,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 
-
-// Supabase Auth uses email — we generate a fake internal one from username
-export function usernameToEmail(username: string) {
-  return `${username.toLowerCase().trim()}@prode2026.app`;
-}
-
 interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<{ error: string | null }>;
-  register: (username: string, displayName: string, password: string) => Promise<{ error: string | null }>;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  register: (username: string, displayName: string, email: string, password: string) => Promise<{ error: string | null; needsConfirmation?: boolean }>;
   logout: () => Promise<void>;
 }
 
@@ -26,13 +20,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load session on mount
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) fetchProfile(user.id);
       else setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) fetchProfile(session.user.id);
       else { setProfile(null); setLoading(false); }
@@ -52,29 +44,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }
 
-  async function login(username: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    return { error: error ? "Usuario o contraseña incorrectos" : null };
+  async function login(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) return { error: null };
+    if (error.message.toLowerCase().includes("email not confirmed")) {
+      return { error: "Tenés que confirmar tu email antes de ingresar. Revisá tu casilla." };
+    }
+    return { error: "Email o contraseña incorrectos" };
   }
 
-  async function register(username: string, displayName: string, password: string) {
+  async function register(username: string, displayName: string, email: string, password: string) {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, displayName, password }),
+      body: JSON.stringify({ username, displayName, email, password }),
     });
     const { error } = await res.json();
     if (error) return { error };
-
-    // Auto sign-in after account creation
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    return { error: signInError ? "Cuenta creada, pero no se pudo iniciar sesión automáticamente. Ingresá manualmente." : null };
+    return { error: null, needsConfirmation: true };
   }
 
   async function logout() {

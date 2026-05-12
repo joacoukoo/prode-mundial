@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
-import { Eye, EyeOff, LogIn, UserPlus, Loader2 } from "lucide-react";
+import { Eye, EyeOff, LogIn, UserPlus, Loader2, MailCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -13,48 +13,77 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const username    = (fd.get("username") as string).trim();
+    const email       = (fd.get("email") as string ?? "").trim();
+    const username    = (fd.get("username") as string ?? "").trim();
     const displayName = (fd.get("displayName") as string ?? "").trim();
     const password    = fd.get("password") as string;
     const confirm     = fd.get("confirm") as string;
 
-    if (!username || !password) {
-      toast.error("Completá todos los campos");
-      return;
-    }
-    if (mode === "register") {
+    if (mode === "login") {
+      if (!email || !password) { toast.error("Completá todos los campos"); return; }
+    } else {
       if (!displayName) { toast.error("Ingresá tu nombre"); return; }
+      if (!username)    { toast.error("Elegí un nombre de usuario"); return; }
+      if (!email)       { toast.error("Ingresá tu email"); return; }
       if (password.length < 6) { toast.error("La contraseña debe tener al menos 6 caracteres"); return; }
-      if (password !== confirm) { toast.error("Las contraseñas no coinciden"); return; }
+      if (password !== confirm)  { toast.error("Las contraseñas no coinciden"); return; }
     }
 
     setLoading(true);
     try {
       if (mode === "login") {
-        const { error } = await login(username, password);
+        const { error } = await login(email, password);
         if (error) { toast.error(error); return; }
         toast.success("¡Bienvenido de nuevo!");
         router.push("/");
         router.refresh();
       } else {
-        const { error } = await register(username, displayName, password);
+        const { error } = await register(username, displayName, email, password);
         if (error) { toast.error(error); return; }
-        toast.success("¡Cuenta creada! Bienvenido al prode 🎉");
-        router.push("/");
-        router.refresh();
+        setRegistered(email);
       }
     } finally {
       setLoading(false);
     }
   }
 
+  // Post-registration screen
+  if (registered) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="relative w-full max-w-md text-center">
+          <div className="flex justify-center mb-8"><Logo size="lg" /></div>
+          <div className="glass rounded-2xl border border-border p-8 flex flex-col items-center gap-4">
+            <div className="p-4 rounded-full bg-primary/15 border border-primary/30">
+              <MailCheck size={36} className="text-primary" />
+            </div>
+            <h2 className="font-heading font-bold text-2xl">¡Cuenta creada!</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Te enviamos un email de confirmación a<br />
+              <span className="font-semibold text-foreground">{registered}</span>
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Confirmá tu cuenta haciendo clic en el link del email, y después podés ingresar.
+            </p>
+            <button
+              onClick={() => { setRegistered(null); setMode("login"); }}
+              className="mt-2 w-full py-3 rounded-xl font-heading font-bold text-lg bg-primary text-primary-foreground hover:bg-gold-dark transition-all"
+            >
+              Ir al login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
-      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[100px] opacity-20"
@@ -94,23 +123,34 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {mode === "register" && (
-              <Field label="Tu nombre">
-                <input
-                  name="displayName"
-                  type="text"
-                  placeholder="Ej: Mati el crack"
-                  autoComplete="name"
-                  className="input-field"
-                />
-              </Field>
+              <>
+                <Field label="Tu nombre">
+                  <input
+                    name="displayName"
+                    type="text"
+                    placeholder="Ej: Mati el crack"
+                    autoComplete="name"
+                    className="input-field"
+                  />
+                </Field>
+                <Field label="Nombre de usuario">
+                  <input
+                    name="username"
+                    type="text"
+                    placeholder="tu_usuario"
+                    autoComplete="username"
+                    className="input-field"
+                  />
+                </Field>
+              </>
             )}
 
-            <Field label="Usuario">
+            <Field label="Email">
               <input
-                name="username"
-                type="text"
-                placeholder="tu_usuario"
-                autoComplete="username"
+                name="email"
+                type="email"
+                placeholder="tu@email.com"
+                autoComplete="email"
                 className="input-field"
               />
             </Field>
