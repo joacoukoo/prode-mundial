@@ -1,13 +1,21 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Clock, CheckCircle2, Edit2 } from "lucide-react";
+import { Lock, Clock, CheckCircle2, Edit2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useState } from "react";
 import type { Match } from "@/lib/types";
 import type { Prediction } from "@/lib/supabase/types";
 import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import { CountryFlag } from "./CountryFlag";
+import { createClient } from "@/lib/supabase/client";
+
+interface MatchPrediction {
+  home_score: number;
+  away_score: number;
+  points: number | null;
+  profiles: { display_name: string; avatar_color: string; avatar_url: string | null };
+}
 
 interface MatchCardProps {
   match: Match;
@@ -126,6 +134,11 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
         </div>
       </div>
 
+      {/* Pronósticos de todos — visible en vivo o terminado */}
+      {(isLive || isFinished) && (
+        <AllPredictions matchId={match.id} isFinished={isFinished} />
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
         <span className="text-xs text-muted-foreground capitalize">{dateStr} · {timeStr} hs</span>
@@ -219,6 +232,89 @@ function PredictionForm({
         </button>
       )}
     </motion.form>
+  );
+}
+
+function AllPredictions({ matchId, isFinished }: { matchId: string; isFinished: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [preds, setPreds] = useState<MatchPrediction[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("predictions")
+      .select("home_score, away_score, points, profiles(display_name, avatar_color, avatar_url)")
+      .eq("match_id", matchId);
+    const sorted = (data ?? []).sort((a, b) => (b.points ?? -1) - (a.points ?? -1));
+    setPreds(sorted as unknown as MatchPrediction[]);
+    setLoaded(true);
+    setLoading(false);
+  }
+
+  function toggle() {
+    if (!loaded) load();
+    setOpen((o) => !o);
+  }
+
+  return (
+    <div className="mt-3 border-t border-border/50 pt-3">
+      <button
+        onClick={toggle}
+        className="w-full flex items-center justify-between text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+      >
+        <span className="font-medium">Pronósticos de todos</span>
+        {loading ? <Loader2 size={13} className="animate-spin" /> : open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+      </button>
+
+      <AnimatePresence>
+        {open && !loading && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-1 mt-2">
+              {preds.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">Nadie cargó pronóstico para este partido</p>
+              )}
+              {preds.map((p, i) => {
+                const badge =
+                  p.points === 5 ? { label: "Exacto", cls: "text-primary bg-primary/10 border-primary/30" } :
+                  p.points === 3 ? { label: "Ganador", cls: "text-accent bg-accent/10 border-accent/30" } :
+                  p.points === 0 ? { label: "−", cls: "text-muted-foreground bg-white/5 border-white/10" } :
+                  null;
+
+                return (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-[10px] overflow-hidden"
+                      style={{ background: p.profiles?.avatar_url ? "transparent" : p.profiles?.avatar_color ?? "#888" }}
+                    >
+                      {p.profiles?.avatar_url
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={p.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                        : p.profiles?.display_name?.slice(0, 2).toUpperCase()
+                      }
+                    </div>
+                    <span className="text-xs font-medium flex-1 truncate">{p.profiles?.display_name}</span>
+                    <span className="font-mono text-xs font-bold text-primary">{p.home_score} - {p.away_score}</span>
+                    {isFinished && badge && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
