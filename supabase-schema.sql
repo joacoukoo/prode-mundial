@@ -96,7 +96,7 @@ create policy "Pronósticos públicos al terminar el partido"
     or exists (
       select 1 from public.match_results mr
       where mr.match_id = predictions.match_id
-        and mr.status = 'finished'
+        and mr.status in ('live', 'finished')
     )
   );
 
