@@ -4,6 +4,8 @@ import { WorldCupTrophy } from "@/components/WorldCupTrophy";
 import { Trophy, Zap, Star, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 const ENTRY_FEE = 75;
 
 export default async function HomePage() {
