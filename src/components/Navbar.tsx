@@ -71,7 +71,7 @@ export function Navbar() {
                 />
                 <span className="text-sm font-medium max-w-[100px] truncate">{profile.display_name}</span>
                 {profile.is_admin && (
-                  <span className="text-xs text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded-full border border-amber-700/40 whitespace-nowrap">Admin</span>
+                  <span className="text-xs text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded-full border border-amber-700/40 whitespace-nowrap">Admin · No participa</span>
                 )}
               </button>
 

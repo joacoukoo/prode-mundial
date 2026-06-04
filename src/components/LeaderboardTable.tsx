@@ -172,7 +172,10 @@ export function LeaderboardTable() {
                       {isMe && <span className="ml-1 text-primary opacity-70">(vos)</span>}
                     </p>
                     {player.is_admin && (
-                      <span className="text-xs text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded-full border border-amber-700/40 hidden sm:inline whitespace-nowrap flex-shrink-0">Admin</span>
+                      <>
+                        <span className="text-xs text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded-full border border-amber-700/40 hidden sm:inline whitespace-nowrap flex-shrink-0">Admin</span>
+                        <span className="text-xs text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded-full border border-white/10 hidden sm:inline whitespace-nowrap flex-shrink-0">No participa</span>
+                      </>
                     )}
                     {rank === 1 && (
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 hidden sm:inline whitespace-nowrap">líder</span>
