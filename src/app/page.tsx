@@ -2,8 +2,18 @@ import { Navbar } from "@/components/Navbar";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { WorldCupTrophy } from "@/components/WorldCupTrophy";
 import { Trophy, Zap, Star, Users } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
+const ENTRY_FEE = 75;
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("is_admin", false);
+  const pot = (count ?? 0) * ENTRY_FEE;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -94,6 +104,7 @@ export default function HomePage() {
           <LeaderboardTable />
         </div>
         <div className="flex flex-col gap-6">
+          <PotCard pot={pot} count={count ?? 0} />
           <BestOfRound />
           <QuickStats />
           <ScoringGuide />
@@ -120,6 +131,28 @@ function StatPill({
       <div className="text-left">
         <p className={`font-heading font-bold text-lg leading-tight ${color}`}>{value}</p>
         <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function PotCard({ pot, count }: { pot: number; count: number }) {
+  return (
+    <div className="glass rounded-2xl border border-primary/40 bg-primary/5 p-5 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at top left, #f0b429 0%, transparent 70%)" }}
+      />
+      <div className="relative flex flex-col gap-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xl">💰</span>
+          <h3 className="font-heading font-bold text-lg text-primary">El Pozo</h3>
+        </div>
+        <p className="font-heading font-bold text-5xl text-primary tracking-tight">
+          Q{pot.toLocaleString("es-GT")}
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          {count} {count === 1 ? "participante inscripto" : "participantes inscriptos"} · Q{ENTRY_FEE} c/u
+        </p>
       </div>
     </div>
   );
