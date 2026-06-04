@@ -248,8 +248,8 @@ function AllPredictions({ matchId, isFinished }: { matchId: string; isFinished: 
       .from("predictions")
       .select("home_score, away_score, points, profiles(display_name, avatar_color, avatar_url)")
       .eq("match_id", matchId);
-    const sorted = (data ?? []).sort((a, b) => (b.points ?? -1) - (a.points ?? -1));
-    setPreds(sorted as unknown as MatchPrediction[]);
+    const sorted = (data as unknown as MatchPrediction[] ?? []).sort((a, b) => (b.points ?? -1) - (a.points ?? -1));
+    setPreds(sorted);
     setLoaded(true);
     setLoading(false);
   }
