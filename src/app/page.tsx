@@ -132,25 +132,9 @@ function BestOfRound() {
         <span className="text-2xl">⭐</span>
         <h3 className="font-heading font-bold text-lg">Estrella de la Jornada</h3>
       </div>
-      <div className="flex items-center gap-3">
-        <div
-          className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg flex-shrink-0"
-          style={{ background: "#f0b429" }}
-        >
-          MA
-        </div>
-        <div>
-          <p className="font-semibold">Mati</p>
-          <p className="text-sm text-muted-foreground">Jornada 1</p>
-        </div>
-        <div className="ml-auto text-right">
-          <p className="font-heading font-bold text-2xl text-primary">45</p>
-          <p className="text-xs text-muted-foreground">pts en J1</p>
-        </div>
-      </div>
-      <div className="mt-3 flex gap-2 text-xs">
-        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">3 exactos</span>
-        <span className="bg-accent/10 text-accent px-2 py-0.5 rounded-full border border-accent/20">4 ganadores</span>
+      <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
+        <span className="text-3xl">🏆</span>
+        <p className="text-sm text-muted-foreground">Disponible al cierre de la primera jornada</p>
       </div>
     </div>
   );
@@ -160,11 +144,9 @@ function QuickStats() {
   return (
     <div className="glass rounded-2xl border border-border p-5">
       <h3 className="font-heading font-bold text-lg mb-4">📊 Stats Globales</h3>
-      <div className="flex flex-col gap-3">
-        <StatRow label="Partido más acertado" value="ARG 2-0 ALG" sub="38 acertaron" />
-        <StatRow label="Resultado más difícil" value="JPN 2-1 NED" sub="Solo 2 lo tenían" />
-        <StatRow label="Promedio de pts" value="141" sub="de 50 jugadores" />
-        <StatRow label="Predicciones cargadas" value="2.184" sub="de 2.500 posibles" />
+      <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
+        <span className="text-3xl">📈</span>
+        <p className="text-sm text-muted-foreground">Las estadísticas aparecen cuando empiece el torneo</p>
       </div>
     </div>
   );
