@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 import { COUNTRIES } from "@/lib/data/countries";
-import { Shield, Users, Trophy, Star, Target, Zap } from "lucide-react";
+import { Shield, Users, Trophy, Star, Target, Zap, CheckCircle2, Circle } from "lucide-react";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-AR", {
@@ -38,6 +38,19 @@ export default function AdminPage() {
       .order("created_at", { ascending: true });
     setPlayers(data ?? []);
     setLoading(false);
+  }
+
+  async function togglePaid(playerId: string, currentPaid: boolean) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ paid: !currentPaid })
+      .eq("id", playerId);
+    if (!error) {
+      setPlayers((prev) =>
+        prev.map((p) => (p.id === playerId ? { ...p, paid: !currentPaid } : p))
+      );
+    }
   }
 
   if (authLoading || loading) {
@@ -73,7 +86,7 @@ export default function AdminPage() {
         {/* Stats rápidas */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard icon={Users} label="Participantes" value={players.length} color="text-blue-400" />
-          <StatCard icon={Trophy} label="Con pronósticos" value={players.filter(p => p.matches_played > 0).length} color="text-primary" />
+          <StatCard icon={CheckCircle2} label="Pagaron" value={players.filter(p => p.paid).length} color="text-green-400" />
           <StatCard icon={Star} label="Exactos totales" value={players.reduce((s, p) => s + p.correct_results, 0)} color="text-yellow-400" />
           <StatCard icon={Zap} label="Puntos en juego" value={totalPoints} color="text-accent" />
         </div>
@@ -91,11 +104,12 @@ export default function AdminPage() {
                   <th className="text-left px-6 py-3">#</th>
                   <th className="text-left px-4 py-3">Nombre</th>
                   <th className="text-left px-4 py-3">Usuario</th>
-                  <th className="text-left px-4 py-3">País</th>
-                  <th className="text-center px-4 py-3">PJ</th>
+                  <th className="text-left px-4 py-3 hidden sm:table-cell">País</th>
+                  <th className="text-center px-4 py-3 hidden sm:table-cell">PJ</th>
                   <th className="text-center px-4 py-3 hidden sm:table-cell"><Star size={11} className="inline mr-1" />Exactos</th>
                   <th className="text-center px-4 py-3 hidden sm:table-cell"><Target size={11} className="inline mr-1" />Ganadores</th>
-                  <th className="text-center px-4 py-3">Pts</th>
+                  <th className="text-center px-4 py-3 hidden sm:table-cell">Pts</th>
+                  <th className="text-center px-4 py-3">Pagó</th>
                   <th className="text-left px-4 py-3 hidden md:table-cell">Registro</th>
                 </tr>
               </thead>
@@ -119,11 +133,23 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground font-mono">@{p.username}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{countryName(p.country)}</td>
-                    <td className="px-4 py-3 text-center font-mono">{p.matches_played}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{countryName(p.country)}</td>
+                    <td className="px-4 py-3 text-center font-mono hidden sm:table-cell">{p.matches_played}</td>
                     <td className="px-4 py-3 text-center hidden sm:table-cell text-primary font-mono">{p.correct_results}</td>
                     <td className="px-4 py-3 text-center hidden sm:table-cell text-accent font-mono">{p.correct_winners}</td>
-                    <td className="px-4 py-3 text-center font-heading font-bold">{p.total_points}</td>
+                    <td className="px-4 py-3 text-center font-heading font-bold hidden sm:table-cell">{p.total_points}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => togglePaid(p.id, p.paid)}
+                        title={p.paid ? "Marcar como no pagado" : "Marcar como pagado"}
+                        className="transition-colors hover:scale-110 active:scale-95"
+                      >
+                        {p.paid
+                          ? <CheckCircle2 size={20} className="text-green-400" />
+                          : <Circle size={20} className="text-muted-foreground/40 hover:text-green-400/60" />
+                        }
+                      </button>
+                    </td>
                     <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs">{formatDate(p.created_at)}</td>
                   </tr>
                 ))}

@@ -82,7 +82,7 @@ export function LeaderboardTable() {
       )}
 
       {/* Column headers */}
-      <div className="grid grid-cols-[44px_1fr_60px_72px_72px_72px] gap-2 px-3 pb-2 text-xs text-muted-foreground font-medium uppercase tracking-wider border-b border-border">
+      <div className="grid grid-cols-[40px_1fr_64px] sm:grid-cols-[44px_1fr_60px_72px_72px_72px] gap-2 px-3 pb-2 text-xs text-muted-foreground font-medium uppercase tracking-wider border-b border-border">
         <span className="text-center">#</span>
         <span>Jugador</span>
         <span className="text-center hidden sm:block">PJ</span>
@@ -114,7 +114,7 @@ export function LeaderboardTable() {
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: Math.min(i * 0.02, 0.6), duration: 0.25 }}
-              className={`grid grid-cols-[44px_1fr_60px_72px_72px_72px] gap-2 items-center px-3 py-2.5 rounded-xl border glass-hover cursor-pointer
+              className={`grid grid-cols-[40px_1fr_64px] sm:grid-cols-[44px_1fr_60px_72px_72px_72px] gap-2 items-center px-3 py-2.5 rounded-xl border glass-hover cursor-pointer
                 ${rowBg}
                 ${isMe ? "ring-1 ring-primary/50 border-primary/20" : isLast ? "border-amber-700/30" : "border-transparent hover:border-white/10"}
               `}
@@ -180,7 +180,7 @@ export function LeaderboardTable() {
                     {rank === 1 && (
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 hidden sm:inline whitespace-nowrap">líder</span>
                     )}
-                    {isLast && <DonkeyFace size={44} />}
+                    {isLast && <DonkeyFace size={30} />}
                     {elim && !isLast && (
                       <span className="text-xs text-orange-400/70 bg-orange-900/10 px-1.5 py-0.5 rounded-full border border-orange-800/20 hidden sm:inline whitespace-nowrap" title={`Máximo posible: ${maxPossible} pts`}>
                         sin chances
