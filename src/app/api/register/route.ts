@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       avatar_url: null,
       country: null,
       is_admin: false,
+      paid: false,
       total_points: 0,
       correct_results: 0,
       correct_winners: 0,
