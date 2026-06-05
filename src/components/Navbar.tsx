@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
-import { Trophy, CalendarDays, BarChart3, MessageSquare, Lightbulb, LogIn, Menu, X, LogOut, User } from "lucide-react";
+import { Trophy, CalendarDays, BarChart3, MessageSquare, Lightbulb, LogIn, Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { PlayerAvatar } from "./PlayerAvatar";
@@ -77,6 +77,16 @@ export function Navbar() {
 
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 glass rounded-xl border border-border shadow-xl z-50 overflow-hidden">
+                  {profile.is_admin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-900/20 transition-colors"
+                    >
+                      <Shield size={15} />
+                      Panel Admin
+                    </Link>
+                  )}
                   <Link
                     href="/perfil"
                     onClick={() => setUserMenuOpen(false)}
@@ -133,7 +143,13 @@ export function Navbar() {
           ))}
           {profile ? (
             <>
-              <Link href="/perfil" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 border-t border-border mt-1">
+              {profile.is_admin && (
+                <Link href="/admin" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-900/20 border-t border-border mt-1">
+                  <Shield size={18} />
+                  Panel Admin
+                </Link>
+              )}
+              <Link href="/perfil" onClick={() => setOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 border-t border-border ${profile.is_admin ? "" : "mt-1"}`}>
                 <User size={18} />
                 Mi perfil ({profile.display_name})
               </Link>
