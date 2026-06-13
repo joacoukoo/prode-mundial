@@ -1,8 +1,9 @@
 import { Navbar } from "@/components/Navbar";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { WorldCupTrophy } from "@/components/WorldCupTrophy";
-import { Trophy, Zap, Star, Users } from "lucide-react";
+import { Trophy, Zap, Star, Users, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { MATCHES } from "@/lib/data/matches";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,82 @@ const ENTRY_FEE = 75;
 
 export default async function HomePage() {
   const supabase = await createClient();
+
+  // Participant count & pot
   const { count } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })
     .eq("is_admin", false);
   const pot = (count ?? 0) * ENTRY_FEE;
+
+  // Finished match results
+  const { data: finishedResults } = await supabase
+    .from("match_results")
+    .select("match_id")
+    .eq("status", "finished");
+
+  const finishedMatchIds = new Set((finishedResults ?? []).map((r) => r.match_id));
+
+  // Determine latest matchday with finished matches
+  const matchdayOf: Record<string, number> = {};
+  MATCHES.forEach((m) => { matchdayOf[m.id] = m.matchday; });
+
+  const finishedMatchdays = [...finishedMatchIds]
+    .map((id) => matchdayOf[id])
+    .filter(Boolean);
+  const currentMatchday = finishedMatchdays.length > 0
+    ? Math.max(...finishedMatchdays)
+    : null;
+
+  // IDs of finished matches in the current matchday
+  const currentMatchdayIds = currentMatchday
+    ? MATCHES.filter((m) => m.matchday === currentMatchday && finishedMatchIds.has(m.id)).map((m) => m.id)
+    : [];
+
+  // Estrella de la Jornada — player with most points in current matchday
+  type StarPlayer = { displayName: string; avatarColor: string; avatarUrl: string | null; points: number };
+  let star: StarPlayer | null = null;
+
+  if (currentMatchdayIds.length > 0) {
+    const { data: preds } = await supabase
+      .from("predictions")
+      .select("user_id, points, profiles(display_name, avatar_color, avatar_url)")
+      .in("match_id", currentMatchdayIds)
+      .not("points", "is", null);
+
+    const byUser: Record<string, StarPlayer> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (preds as any[] ?? []).forEach((p) => {
+      if (!byUser[p.user_id]) {
+        byUser[p.user_id] = {
+          displayName: p.profiles?.display_name ?? "?",
+          avatarColor: p.profiles?.avatar_color ?? "#888",
+          avatarUrl: p.profiles?.avatar_url ?? null,
+          points: 0,
+        };
+      }
+      byUser[p.user_id].points += p.points ?? 0;
+    });
+
+    const users = Object.values(byUser);
+    if (users.length > 0) {
+      star = users.reduce((best, u) => (u.points > best.points ? u : best));
+    }
+  }
+
+  // Global stats from profiles
+  const { data: profileStats } = await supabase
+    .from("profiles")
+    .select("correct_results, correct_winners, matches_played")
+    .eq("is_admin", false);
+
+  const totalExactos = (profileStats ?? []).reduce((s, p) => s + p.correct_results, 0);
+  const totalGanadores = (profileStats ?? []).reduce((s, p) => s + p.correct_winners, 0);
+  const totalPartidosJugados = finishedMatchIds.size;
+  const totalPredsScorable = (profileStats ?? []).reduce((s, p) => s + p.matches_played, 0);
+  const pctExactos = totalPredsScorable > 0
+    ? Math.round((totalExactos / totalPredsScorable) * 100)
+    : 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -22,12 +94,9 @@ export default async function HomePage() {
 
       {/* Hero banner */}
       <section className="relative overflow-hidden border-b border-primary/20">
-        {/* Multi-layer background */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Diagonal stripes — ultra/scarf energy */}
           <div className="absolute inset-0 stripe-accent" />
           <div className="absolute inset-0 bg-gradient-to-br from-green-950/50 via-transparent to-amber-950/20" />
-          {/* Pitch lines */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="pitch" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
@@ -38,7 +107,6 @@ export default async function HomePage() {
             <circle cx="50%" cy="50%" r="120" fill="none" stroke="white" strokeWidth="0.5" />
             <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" strokeWidth="0.5" />
           </svg>
-          {/* Glow — greener, more vivid */}
           <div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] rounded-full opacity-25 blur-[90px]"
             style={{ background: "radial-gradient(ellipse, #f7c22a 0%, rgba(34,229,114,0.45) 50%, transparent 70%)" }}
@@ -47,15 +115,11 @@ export default async function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-
-            {/* Text content */}
             <div className="flex-1 text-center lg:text-left">
-              {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/40 bg-primary/10 text-primary text-sm font-semibold mb-6">
                 <span className="w-2 h-2 rounded-full bg-primary live-dot" />
                 Mundial 2026 · 11 Jun – 19 Jul
               </div>
-
               <h1 className="font-heading font-bold text-5xl sm:text-7xl text-foreground tracking-tight leading-none mb-4">
                 EL PRODE<br />
                 <span className="text-gold-gradient">MÁS ÉPICO</span><br />
@@ -65,8 +129,6 @@ export default async function HomePage() {
                 {count ?? 0} participantes. 72 partidos. Un solo campeón.
                 ¿Sos el que más sabe de fútbol?
               </p>
-
-              {/* CTA */}
               <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
                 <a
                   href="/partidos"
@@ -82,8 +144,6 @@ export default async function HomePage() {
                   Ingresar
                 </a>
               </div>
-
-              {/* Stats pills */}
               <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
                 <StatPill icon={Users} value={String(count ?? 0)} label="Jugadores" color="text-primary" />
                 <StatPill icon={Trophy} value="72" label="Partidos" color="text-accent" />
@@ -91,8 +151,6 @@ export default async function HomePage() {
                 <StatPill icon={Star} value="3pts" label="Por ganador" color="text-purple-400" />
               </div>
             </div>
-
-            {/* Trophy */}
             <div className="flex-shrink-0 flex items-center justify-center">
               <WorldCupTrophy />
             </div>
@@ -107,8 +165,13 @@ export default async function HomePage() {
         </div>
         <div className="flex flex-col gap-6">
           <PotCard pot={pot} count={count ?? 0} />
-          <BestOfRound />
-          <QuickStats />
+          <BestOfRound star={star} matchday={currentMatchday} totalMatches={currentMatchdayIds.length} />
+          <QuickStats
+            exactos={totalExactos}
+            ganadores={totalGanadores}
+            partidosJugados={totalPartidosJugados}
+            pctExactos={pctExactos}
+          />
           <ScoringGuide />
         </div>
       </main>
@@ -117,15 +180,10 @@ export default async function HomePage() {
 }
 
 function StatPill({
-  icon: Icon,
-  value,
-  label,
-  color,
+  icon: Icon, value, label, color,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
-  value: string;
-  label: string;
-  color: string;
+  value: string; label: string; color: string;
 }) {
   return (
     <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2.5 border border-white/10">
@@ -160,39 +218,90 @@ function PotCard({ pot, count }: { pot: number; count: number }) {
   );
 }
 
-function BestOfRound() {
+function BestOfRound({
+  star, matchday, totalMatches,
+}: {
+  star: { displayName: string; avatarColor: string; avatarUrl: string | null; points: number } | null;
+  matchday: number | null;
+  totalMatches: number;
+}) {
   return (
     <div className="glass rounded-2xl border border-border p-5">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">⭐</span>
         <h3 className="font-heading font-bold text-lg">Estrella de la Jornada</h3>
       </div>
-      <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
-        <span className="text-3xl">🏆</span>
-        <p className="text-sm text-muted-foreground">Disponible al cierre de la primera jornada</p>
-      </div>
+      {!star ? (
+        <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
+          <span className="text-3xl">🏆</span>
+          <p className="text-sm text-muted-foreground">Disponible cuando terminen los primeros partidos</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-xs text-muted-foreground">
+            Jornada {matchday} · {totalMatches} {totalMatches === 1 ? "partido jugado" : "partidos jugados"}
+          </p>
+          <div className="flex flex-col items-center gap-2">
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl ring-2 ring-primary overflow-hidden"
+              style={{ background: star.avatarUrl ? "transparent" : star.avatarColor }}
+            >
+              {star.avatarUrl
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={star.avatarUrl} alt={star.displayName} className="w-full h-full object-cover" />
+                : star.displayName.slice(0, 2).toUpperCase()
+              }
+            </div>
+            <div className="text-center">
+              <p className="font-heading font-bold text-base">{star.displayName}</p>
+              <p className="text-primary font-heading font-bold text-2xl">+{star.points} pts</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function QuickStats() {
+function QuickStats({
+  exactos, ganadores, partidosJugados, pctExactos,
+}: {
+  exactos: number; ganadores: number; partidosJugados: number; pctExactos: number;
+}) {
+  if (partidosJugados === 0) {
+    return (
+      <div className="glass rounded-2xl border border-border p-5">
+        <h3 className="font-heading font-bold text-lg mb-4">📊 Stats Globales</h3>
+        <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
+          <span className="text-3xl">📈</span>
+          <p className="text-sm text-muted-foreground">Disponibles cuando terminen los primeros partidos</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="glass rounded-2xl border border-border p-5">
       <h3 className="font-heading font-bold text-lg mb-4">📊 Stats Globales</h3>
-      <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
-        <span className="text-3xl">📈</span>
-        <p className="text-sm text-muted-foreground">Las estadísticas aparecen cuando empiece el torneo</p>
+      <div className="flex flex-col gap-0">
+        <StatRow icon="🎯" label="Exactos totales" value={String(exactos)} sub="en todo el prode" />
+        <StatRow icon="✅" label="Ganadores totales" value={String(ganadores)} sub="resultado correcto sin exacto" />
+        <StatRow icon="⚽" label="Partidos jugados" value={`${partidosJugados}/72`} sub="fase de grupos" />
+        <StatRow icon="📈" label="% de exactos" value={`${pctExactos}%`} sub="del total de pronósticos" />
       </div>
     </div>
   );
 }
 
-function StatRow({ label, value, sub }: { label: string; value: string; sub: string }) {
+function StatRow({ icon, label, value, sub }: { icon: string; label: string; value: string; sub: string }) {
   return (
-    <div className="flex items-center justify-between gap-2 py-1 border-b border-border last:border-0">
-      <div>
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{sub}</p>
+    <div className="flex items-center justify-between gap-2 py-2.5 border-b border-border/50 last:border-0">
+      <div className="flex items-center gap-2">
+        <span className="text-base">{icon}</span>
+        <div>
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground">{sub}</p>
+        </div>
       </div>
       <span className="font-mono font-bold text-primary text-sm flex-shrink-0">{value}</span>
     </div>
