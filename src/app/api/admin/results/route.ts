@@ -29,12 +29,11 @@ export async function POST(req: Request) {
   }
 
   const admin = createAdminClient();
-  const { error } = await admin
-    .from("match_results")
-    .upsert(
-      { match_id, home_score, away_score, status },
-      { onConflict: "match_id" },
-    );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from("match_results") as any).upsert(
+    { match_id, home_score, away_score, status, minute: null },
+    { onConflict: "match_id" },
+  );
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

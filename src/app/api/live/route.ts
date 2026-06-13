@@ -107,18 +107,17 @@ async function persistToSupabase(fixtures: LiveFixture[]) {
     // Protect results already loaded manually by admin
     if (alreadyFinished.has(match.id)) continue;
 
-    await admin
-      .from("match_results")
-      .upsert(
-        {
-          match_id: match.id,
-          home_score: fixture.homeScore ?? 0,
-          away_score: fixture.awayScore ?? 0,
-          status: fixture.status,
-          minute: fixture.minute,
-        },
-        { onConflict: "match_id" },
-      );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from("match_results") as any).upsert(
+      {
+        match_id: match.id,
+        home_score: fixture.homeScore ?? 0,
+        away_score: fixture.awayScore ?? 0,
+        status: fixture.status,
+        minute: fixture.minute,
+      },
+      { onConflict: "match_id" },
+    );
   }
 }
 
