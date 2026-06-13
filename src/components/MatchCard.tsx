@@ -259,6 +259,12 @@ function AllPredictions({ matchId, isFinished }: { matchId: string; isFinished: 
     setLoading(false);
   }
 
+  // Reload when match finishes so points/badges appear
+  useEffect(() => {
+    if (isFinished && loaded) load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFinished]);
+
   function toggle() {
     if (!loaded) load();
     setOpen((o) => !o);
