@@ -3,11 +3,8 @@ import { MATCHES } from "@/lib/data/matches";
 import { API_TEAM_NAMES } from "@/lib/data/apiTeamNames";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// API-Football / API-Sports World Cup 2026
-// League 1 = FIFA World Cup, works on both api-football.com and RapidAPI
-const LEAGUE_ID = 1;
-const SEASON    = 2026;
-const API_KEY   = process.env.API_FOOTBALL_KEY ?? "";
+// worldcup26.ir — free, no API key required, live scores for 2026
+const WC_API_URL = "https://worldcup26.ir/get/games";
 
 export interface LiveFixture {
   id: number;
@@ -21,26 +18,8 @@ export interface LiveFixture {
 }
 
 export async function GET() {
-  if (!API_KEY) {
-    return NextResponse.json(
-      { fixtures: [], configured: false, message: "API_FOOTBALL_KEY not set" },
-      { status: 200 },
-    );
-  }
-
   try {
-    const today = new Date().toISOString().split("T")[0];
-    const url   = `https://v3.football.api-sports.io/fixtures?league=${LEAGUE_ID}&season=${SEASON}&date=${today}`;
-
-    const res = await fetch(url, {
-      headers: {
-        // Support both api-football.com direct keys and RapidAPI keys
-        "x-apisports-key": API_KEY,
-        "x-rapidapi-key":  API_KEY,
-        "x-rapidapi-host": "v3.football.api-sports.io",
-      },
-      cache: "no-store",
-    });
+    const res = await fetch(WC_API_URL, { cache: "no-store" });
 
     if (!res.ok) {
       return NextResponse.json(
@@ -50,29 +29,22 @@ export async function GET() {
     }
 
     const json = await res.json();
+    const games: Record<string, string>[] = json.games ?? [];
 
-    // API-Football returns errors in the response body even on HTTP 200
-    if (json.errors && Object.keys(json.errors).length > 0) {
-      console.error("[/api/live] API error:", json.errors);
-      return NextResponse.json(
-        { fixtures: [], configured: true, error: JSON.stringify(json.errors) },
-        { status: 500 },
-      );
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fixtures: LiveFixture[] = (json.response ?? []).map((f: any) => ({
-      id:        f.fixture.id,
-      homeTeam:  f.teams.home.name,
-      awayTeam:  f.teams.away.name,
-      homeScore: f.goals.home,
-      awayScore: f.goals.away,
-      status:    mapStatus(f.fixture.status.short),
-      minute:    f.fixture.status.elapsed ?? null,
-      date:      f.fixture.date,
+    const fixtures: LiveFixture[] = games.map((g) => ({
+      id:        parseInt(g.id, 10),
+      homeTeam:  g.home_team_name_en,
+      awayTeam:  g.away_team_name_en,
+      homeScore: g.home_score && g.home_score !== "null" ? parseInt(g.home_score, 10) : null,
+      awayScore: g.away_score && g.away_score !== "null" ? parseInt(g.away_score, 10) : null,
+      status:    mapStatus(g.finished, g.time_elapsed),
+      minute:    parseMinute(g.time_elapsed),
+      date:      localDateToISO(g.local_date),
     }));
 
-    console.log(`[/api/live] ${fixtures.length} fixtures for ${today}:`, fixtures.map(f => `${f.homeTeam} vs ${f.awayTeam} (${f.status})`));
+    const liveCount = fixtures.filter((f) => f.status === "live").length;
+    const finishedCount = fixtures.filter((f) => f.status === "finished").length;
+    console.log(`[/api/live] ${fixtures.length} fixtures — ${liveCount} live, ${finishedCount} finished`);
 
     await persistToSupabase(fixtures);
 
@@ -128,10 +100,23 @@ async function persistToSupabase(fixtures: LiveFixture[]) {
   }
 }
 
-function mapStatus(short: string): LiveFixture["status"] {
-  if (["TBD", "NS"].includes(short)) return "upcoming";
-  if (["FT", "AET", "PEN", "AWD", "WO"].includes(short)) return "finished";
+function mapStatus(finished: string, timeElapsed: string): LiveFixture["status"] {
+  if (finished === "TRUE") return "finished";
+  if (timeElapsed === "notstarted") return "upcoming";
   return "live";
+}
+
+function parseMinute(timeElapsed: string): number | null {
+  if (!timeElapsed || timeElapsed === "notstarted" || timeElapsed === "finished") return null;
+  const n = parseInt(timeElapsed, 10);
+  return isNaN(n) ? null : n;
+}
+
+// "MM/DD/YYYY HH:MM" → "YYYY-MM-DDTHH:MM:00"
+function localDateToISO(localDate: string): string {
+  const [datePart, timePart] = localDate.split(" ");
+  const [month, day, year] = datePart.split("/");
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${timePart ?? "00:00"}:00`;
 }
 
 function normalize(name: string) {
