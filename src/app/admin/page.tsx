@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile, MatchResult } from "@/lib/supabase/types";
 import { COUNTRIES } from "@/lib/data/countries";
 import { MATCHES } from "@/lib/data/matches";
-import { Shield, Users, Trophy, Star, Target, Zap, CheckCircle2, Circle, Loader2, Save } from "lucide-react";
+import { Shield, Users, Trophy, Star, Target, Zap, CheckCircle2, Circle, Loader2, Save, Radio, Plus, Minus, Flag } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 
 function formatDate(iso: string) {
@@ -126,6 +126,9 @@ export default function AdminPage() {
           <StatCard icon={Star} label="Exactos totales" value={players.reduce((s, p) => s + p.correct_results, 0)} color="text-yellow-400" />
           <StatCard icon={Zap} label="Puntos en juego" value={totalPoints} color="text-accent" />
         </div>
+
+        {/* ── Partido en vivo ── */}
+        <LiveSection matchResults={matchResults} savingMatch={savingMatch} onSave={handleSaveResult} />
 
         {/* ── Carga de resultados ── */}
         <div className="glass rounded-2xl border border-border overflow-hidden">
@@ -335,6 +338,151 @@ function MatchResultRow({
           Guardar
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── Live section ─────────────────────────────────────────────────────────────
+
+function LiveSection({
+  matchResults,
+  savingMatch,
+  onSave,
+}: {
+  matchResults: Record<string, MatchResult>;
+  savingMatch: string | null;
+  onSave: (matchId: string, home: number, away: number, status: "upcoming" | "live" | "finished") => void;
+}) {
+  // Matches happening today (Guatemala = UTC-6) that aren't finished yet
+  const nowGT = new Date(Date.now() - 6 * 60 * 60 * 1000);
+  const todayGT = nowGT.toISOString().split("T")[0];
+
+  const activeMatches = MATCHES.filter((m) => {
+    const matchDayGT = new Date(new Date(m.date).getTime() - 6 * 60 * 60 * 1000)
+      .toISOString().split("T")[0];
+    const isToday = matchDayGT === todayGT;
+    const isLive = matchResults[m.id]?.status === "live";
+    const isFinished = matchResults[m.id]?.status === "finished";
+    return (isToday || isLive) && !isFinished;
+  });
+
+  if (activeMatches.length === 0) return null;
+
+  return (
+    <div className="glass rounded-2xl border border-green-500/30 overflow-hidden">
+      <div className="px-6 py-4 border-b border-green-500/20 flex items-center gap-2 bg-green-500/5">
+        <Radio size={16} className="text-green-400 animate-pulse" />
+        <span className="font-semibold text-sm text-green-400">Partidos de hoy</span>
+      </div>
+      <div className="p-6 flex flex-col gap-4">
+        {activeMatches.map((match) => (
+          <LiveMatchControl
+            key={match.id}
+            match={match}
+            existing={matchResults[match.id] ?? null}
+            saving={savingMatch === match.id}
+            onSave={onSave}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LiveMatchControl({
+  match,
+  existing,
+  saving,
+  onSave,
+}: {
+  match: (typeof MATCHES)[number];
+  existing: MatchResult | null;
+  saving: boolean;
+  onSave: (matchId: string, home: number, away: number, status: "upcoming" | "live" | "finished") => void;
+}) {
+  const [home, setHome] = useState(existing?.home_score ?? 0);
+  const [away, setAway] = useState(existing?.away_score ?? 0);
+
+  useEffect(() => {
+    if (existing) {
+      setHome(existing.home_score ?? 0);
+      setAway(existing.away_score ?? 0);
+    }
+  }, [existing]);
+
+  const isLive = existing?.status === "live";
+
+  return (
+    <div className="flex flex-col gap-4 p-4 rounded-xl bg-white/3 border border-white/8">
+      {/* Teams + score controls */}
+      <div className="flex items-center gap-3">
+        {/* Home */}
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <CountryFlag flagCode={match.homeTeam.flagCode} countryName={match.homeTeam.name} size="lg" />
+          <span className="text-sm font-bold text-center leading-tight">{match.homeTeam.shortName}</span>
+        </div>
+
+        {/* Score controls */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-col items-center gap-1">
+            <button onClick={() => setHome((v) => Math.max(0, v - 1))}
+              className="w-9 h-9 rounded-lg bg-white/8 hover:bg-white/15 flex items-center justify-center transition-colors active:scale-95">
+              <Minus size={16} />
+            </button>
+            <span className="font-heading font-bold text-4xl tabular-nums w-10 text-center">{home}</span>
+            <button onClick={() => setHome((v) => v + 1)}
+              className="w-9 h-9 rounded-lg bg-primary/20 hover:bg-primary/35 text-primary flex items-center justify-center transition-colors active:scale-95">
+              <Plus size={16} />
+            </button>
+          </div>
+
+          <span className="text-muted-foreground font-bold text-2xl pb-1">–</span>
+
+          <div className="flex flex-col items-center gap-1">
+            <button onClick={() => setAway((v) => Math.max(0, v - 1))}
+              className="w-9 h-9 rounded-lg bg-white/8 hover:bg-white/15 flex items-center justify-center transition-colors active:scale-95">
+              <Minus size={16} />
+            </button>
+            <span className="font-heading font-bold text-4xl tabular-nums w-10 text-center">{away}</span>
+            <button onClick={() => setAway((v) => v + 1)}
+              className="w-9 h-9 rounded-lg bg-primary/20 hover:bg-primary/35 text-primary flex items-center justify-center transition-colors active:scale-95">
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Away */}
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <CountryFlag flagCode={match.awayTeam.flagCode} countryName={match.awayTeam.name} size="lg" />
+          <span className="text-sm font-bold text-center leading-tight">{match.awayTeam.shortName}</span>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onSave(match.id, home, away, "live")}
+          disabled={saving}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 font-semibold text-sm transition-all disabled:opacity-50 active:scale-95"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Radio size={14} />}
+          Actualizar
+        </button>
+        <button
+          onClick={() => onSave(match.id, home, away, "finished")}
+          disabled={saving}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 font-semibold text-sm transition-all disabled:opacity-50 active:scale-95"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Flag size={14} />}
+          Finalizar
+        </button>
+      </div>
+
+      {isLive && (
+        <p className="text-center text-xs text-green-400/70">
+          Score actual guardado: {existing?.home_score} – {existing?.away_score}
+        </p>
+      )}
     </div>
   );
 }
