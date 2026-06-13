@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { MATCHES } from "@/lib/data/matches";
+import { API_TEAM_NAMES } from "@/lib/data/apiTeamNames";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // FIFA World Cup 2026 fixture ID on API-Football
@@ -96,11 +97,11 @@ async function persistToSupabase(fixtures: LiveFixture[]) {
   for (const fixture of fixtures) {
     if (fixture.status === "upcoming") continue;
 
-    // Match fixture to our internal match by team names
+    // Match fixture to our internal match using English API names
     const match = MATCHES.find(
       (m) =>
-        normalize(fixture.homeTeam) === normalize(m.homeTeam.name) &&
-        normalize(fixture.awayTeam) === normalize(m.awayTeam.name),
+        normalize(fixture.homeTeam) === normalize(API_TEAM_NAMES[m.homeTeam.id] ?? m.homeTeam.name) &&
+        normalize(fixture.awayTeam) === normalize(API_TEAM_NAMES[m.awayTeam.id] ?? m.awayTeam.name),
     );
     if (!match) continue;
 
