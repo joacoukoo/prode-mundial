@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Clock, CheckCircle2, Edit2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Match } from "@/lib/types";
 import type { Prediction } from "@/lib/supabase/types";
 import { formatInTimeZone } from "date-fns-tz";
@@ -161,6 +161,11 @@ function PredictionForm({
 }) {
   const [editing, setEditing] = useState(!prediction);
   const [saved, setSaved] = useState(false);
+
+  // predictions load async — collapse the form once they arrive
+  useEffect(() => {
+    if (prediction) setEditing(false);
+  }, [prediction]);
 
   // If already predicted, show summary with Edit button
   if (!editing && prediction) {
