@@ -31,7 +31,9 @@ export async function GET() {
     const json = await res.json();
     const games: Record<string, string>[] = json.games ?? [];
 
-    const fixtures: LiveFixture[] = games.map((g) => ({
+    const fixtures: LiveFixture[] = games
+    .filter((g) => g.home_team_name_en && g.away_team_name_en)
+    .map((g) => ({
       id:        parseInt(g.id, 10),
       homeTeam:  g.home_team_name_en,
       awayTeam:  g.away_team_name_en,
