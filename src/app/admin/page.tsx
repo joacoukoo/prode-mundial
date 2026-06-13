@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile } from "@/lib/supabase/types";
+import type { Profile, MatchResult } from "@/lib/supabase/types";
 import { COUNTRIES } from "@/lib/data/countries";
-import { Shield, Users, Trophy, Star, Target, Zap, CheckCircle2, Circle } from "lucide-react";
+import { MATCHES } from "@/lib/data/matches";
+import { Shield, Users, Trophy, Star, Target, Zap, CheckCircle2, Circle, Loader2, Save } from "lucide-react";
+import { CountryFlag } from "@/components/CountryFlag";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-AR", {
@@ -16,17 +18,23 @@ function formatDate(iso: string) {
   });
 }
 
+const MATCHDAYS = [1, 2, 3];
+
 export default function AdminPage() {
   const { profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [players, setPlayers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchResults, setMatchResults] = useState<Record<string, MatchResult>>({});
+  const [resultsMatchday, setResultsMatchday] = useState(1);
+  const [savingMatch, setSavingMatch] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!profile) { router.push("/login"); return; }
     if (!profile.is_admin) { router.push("/"); return; }
     fetchPlayers();
+    fetchResults();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, profile]);
 
@@ -40,6 +48,14 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  async function fetchResults() {
+    const supabase = createClient();
+    const { data } = await supabase.from("match_results").select("*");
+    const map: Record<string, MatchResult> = {};
+    (data ?? []).forEach((r) => { map[r.match_id] = r; });
+    setMatchResults(map);
+  }
+
   async function togglePaid(playerId: string, currentPaid: boolean) {
     const supabase = createClient();
     const { error } = await supabase
@@ -50,6 +66,25 @@ export default function AdminPage() {
       setPlayers((prev) =>
         prev.map((p) => (p.id === playerId ? { ...p, paid: !currentPaid } : p))
       );
+    }
+  }
+
+  async function handleSaveResult(
+    matchId: string,
+    homeScore: number,
+    awayScore: number,
+    status: "upcoming" | "live" | "finished",
+  ) {
+    setSavingMatch(matchId);
+    try {
+      const res = await fetch("/api/admin/results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ match_id: matchId, home_score: homeScore, away_score: awayScore, status }),
+      });
+      if (res.ok) await fetchResults();
+    } finally {
+      setSavingMatch(null);
     }
   }
 
@@ -66,6 +101,7 @@ export default function AdminPage() {
     COUNTRIES.find((c) => c.code === code)?.name ?? "—";
 
   const totalPoints = players.reduce((s, p) => s + p.total_points, 0);
+  const matchesForDay = MATCHES.filter((m) => m.matchday === resultsMatchday);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -89,6 +125,43 @@ export default function AdminPage() {
           <StatCard icon={CheckCircle2} label="Pagaron" value={players.filter(p => p.paid).length} color="text-green-400" />
           <StatCard icon={Star} label="Exactos totales" value={players.reduce((s, p) => s + p.correct_results, 0)} color="text-yellow-400" />
           <StatCard icon={Zap} label="Puntos en juego" value={totalPoints} color="text-accent" />
+        </div>
+
+        {/* ── Carga de resultados ── */}
+        <div className="glass rounded-2xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center gap-2">
+            <Trophy size={16} className="text-primary" />
+            <span className="font-semibold text-sm">Cargar resultados de partidos</span>
+          </div>
+
+          {/* Jornada tabs */}
+          <div className="px-6 pt-4 flex gap-2">
+            {MATCHDAYS.map((md) => (
+              <button
+                key={md}
+                onClick={() => setResultsMatchday(md)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold border transition-all ${
+                  resultsMatchday === md
+                    ? "bg-primary/20 text-primary border-primary/40"
+                    : "glass text-muted-foreground border-border hover:text-foreground"
+                }`}
+              >
+                Jornada {md}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {matchesForDay.map((match) => (
+              <MatchResultRow
+                key={match.id}
+                match={match}
+                existing={matchResults[match.id] ?? null}
+                saving={savingMatch === match.id}
+                onSave={handleSaveResult}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Tabla de participantes */}
@@ -159,6 +232,109 @@ export default function AdminPage() {
         </div>
 
       </main>
+    </div>
+  );
+}
+
+// ── Match result row ──────────────────────────────────────────────────────────
+
+function MatchResultRow({
+  match,
+  existing,
+  saving,
+  onSave,
+}: {
+  match: (typeof MATCHES)[number];
+  existing: MatchResult | null;
+  saving: boolean;
+  onSave: (matchId: string, home: number, away: number, status: "upcoming" | "live" | "finished") => void;
+}) {
+  const [home, setHome] = useState(existing?.home_score ?? 0);
+  const [away, setAway] = useState(existing?.away_score ?? 0);
+  const [status, setStatus] = useState<"upcoming" | "live" | "finished">(existing?.status ?? "finished");
+
+  // Sync if existing loads after mount
+  useEffect(() => {
+    if (existing) {
+      setHome(existing.home_score ?? 0);
+      setAway(existing.away_score ?? 0);
+      setStatus(existing.status);
+    }
+  }, [existing]);
+
+  const statusColor =
+    existing?.status === "finished" ? "text-primary" :
+    existing?.status === "live" ? "text-green-400" :
+    "text-muted-foreground";
+
+  return (
+    <div className="glass rounded-xl border border-border p-4 flex flex-col gap-3">
+      {/* Match header */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold text-primary/70 bg-primary/8 px-2 py-0.5 rounded border border-primary/20 uppercase tracking-widest">
+          G{match.group}
+        </span>
+        {existing && (
+          <span className={`text-[10px] font-bold uppercase ${statusColor}`}>
+            {existing.status === "finished" ? "Cargado ✓" : existing.status === "live" ? "En vivo" : "Próximo"}
+          </span>
+        )}
+      </div>
+
+      {/* Teams + score inputs */}
+      <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <CountryFlag flagCode={match.homeTeam.flagCode} countryName={match.homeTeam.name} size="md" />
+          <span className="text-xs font-bold truncate">{match.homeTeam.shortName}</span>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <input
+            type="number"
+            min={0}
+            max={20}
+            value={home}
+            onChange={(e) => setHome(Math.max(0, parseInt(e.target.value) || 0))}
+            className="w-10 h-10 text-center font-mono font-bold text-xl bg-white/5 border-2 border-white/20 rounded-lg focus:border-primary outline-none"
+          />
+          <span className="text-muted-foreground font-bold">-</span>
+          <input
+            type="number"
+            min={0}
+            max={20}
+            value={away}
+            onChange={(e) => setAway(Math.max(0, parseInt(e.target.value) || 0))}
+            className="w-10 h-10 text-center font-mono font-bold text-xl bg-white/5 border-2 border-white/20 rounded-lg focus:border-primary outline-none"
+          />
+        </div>
+
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <CountryFlag flagCode={match.awayTeam.flagCode} countryName={match.awayTeam.name} size="md" />
+          <span className="text-xs font-bold truncate">{match.awayTeam.shortName}</span>
+        </div>
+      </div>
+
+      {/* Status + save */}
+      <div className="flex items-center gap-2">
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as typeof status)}
+          className="flex-1 px-2 py-1.5 rounded-lg bg-white/5 border border-border text-xs font-medium focus:border-primary outline-none appearance-none"
+        >
+          <option value="upcoming">Próximo</option>
+          <option value="live">En vivo</option>
+          <option value="finished">Finalizado</option>
+        </select>
+
+        <button
+          onClick={() => onSave(match.id, home, away, status)}
+          disabled={saving}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/80 disabled:opacity-50 transition-all"
+        >
+          {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+          Guardar
+        </button>
+      </div>
     </div>
   );
 }

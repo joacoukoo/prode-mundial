@@ -62,7 +62,7 @@ export default async function HomePage() {
                 DEL MUNDIAL
               </h1>
               <p className="text-muted-foreground text-lg max-w-md mx-auto lg:mx-0 mb-8">
-                50 participantes. 72 partidos. Un solo campeón.
+                {count ?? 0} participantes. 72 partidos. Un solo campeón.
                 ¿Sos el que más sabe de fútbol?
               </p>
 
@@ -85,7 +85,7 @@ export default async function HomePage() {
 
               {/* Stats pills */}
               <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
-                <StatPill icon={Users} value="50" label="Jugadores" color="text-primary" />
+                <StatPill icon={Users} value={String(count ?? 0)} label="Jugadores" color="text-primary" />
                 <StatPill icon={Trophy} value="72" label="Partidos" color="text-accent" />
                 <StatPill icon={Zap} value="5pts" label="Por exacto" color="text-blue-400" />
                 <StatPill icon={Star} value="3pts" label="Por ganador" color="text-purple-400" />

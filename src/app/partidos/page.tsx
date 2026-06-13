@@ -109,7 +109,7 @@ export default function PartidosPage() {
             )}
             <div className="hidden sm:flex items-center gap-2 text-xs text-yellow-300 bg-yellow-400/10 border border-yellow-400/20 px-3 py-1.5 rounded-xl">
               <Clock size={14} />
-              Cierre 30 min antes (hora GT)
+              Cierre 5 min antes (hora GT)
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function PartidosPage() {
         {/* Mobile deadline reminder */}
         <div className="sm:hidden flex items-center gap-2 text-xs text-yellow-300 bg-yellow-400/10 border border-yellow-400/20 px-3 py-2 rounded-xl mb-4">
           <Clock size={14} />
-          Cierre 30 min antes de cada partido (hora Guatemala)
+          Cierre 5 min antes de cada partido (hora Guatemala)
         </div>
 
         {/* Matches grid */}

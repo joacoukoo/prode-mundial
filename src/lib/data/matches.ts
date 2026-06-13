@@ -52,7 +52,7 @@ export const MATCHES: Match[] = [
 
   // ── Grupo D ────────────────────────────────────────────────────────────────
   m(19, "usa", "par", "D", 1, "2026-06-13T01:00:00Z", "SoFi Stadium",             "Los Ángeles"),
-  m(20, "aus", "tur", "D", 1, "2026-06-13T04:00:00Z", "BC Place",                 "Vancouver"),
+  m(20, "aus", "tur", "D", 1, "2026-06-14T04:00:00Z", "BC Place",                 "Vancouver"),
   m(21, "tur", "par", "D", 2, "2026-06-19T04:00:00Z", "Levi's Stadium",           "Santa Clara"),
   m(22, "usa", "aus", "D", 2, "2026-06-19T19:00:00Z", "Lumen Field",              "Seattle"),
   m(23, "tur", "usa", "D", 3, "2026-06-26T02:00:00Z", "SoFi Stadium",             "Los Ángeles"),

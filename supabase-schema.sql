@@ -23,6 +23,7 @@ create table if not exists public.profiles (
 -- Agregar columnas que pueden faltar si ya existía la tabla
 alter table public.profiles add column if not exists country text;
 alter table public.profiles add column if not exists is_admin boolean not null default false;
+alter table public.profiles add column if not exists paid boolean not null default false;
 
 -- 2. PRONÓSTICOS
 create table if not exists public.predictions (
@@ -160,6 +161,8 @@ declare
 begin
   -- Solo recalcular cuando el partido termina
   if new.status <> 'finished' then return new; end if;
+  -- Evitar doble-suma si el partido ya estaba finished (ej: corrección de marcador)
+  if TG_OP = 'UPDATE' and old.status = 'finished' then return new; end if;
 
   real_outcome := sign(new.home_score - new.away_score);
 

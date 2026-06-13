@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { MATCHES } from "@/lib/data/matches";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // FIFA World Cup 2026 fixture ID on API-Football
 // League ID 1 = FIFA World Cup, Season 2026
@@ -64,6 +66,10 @@ export async function GET() {
     }));
 
     cache = { data: fixtures, fetchedAt: Date.now() };
+
+    // Persist live/finished results to Supabase so points trigger fires automatically
+    await persistToSupabase(fixtures);
+
     return NextResponse.json({ fixtures, configured: true, cached: false });
   } catch (err) {
     console.error("[/api/live]", err);
@@ -71,8 +77,62 @@ export async function GET() {
   }
 }
 
+async function persistToSupabase(fixtures: LiveFixture[]) {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+
+  const admin = createAdminClient();
+
+  // Load existing results — never overwrite a match already finished in Supabase
+  const { data: existingResults } = await admin
+    .from("match_results")
+    .select("match_id, status");
+
+  const alreadyFinished = new Set(
+    (existingResults ?? [])
+      .filter((r) => r.status === "finished")
+      .map((r) => r.match_id),
+  );
+
+  for (const fixture of fixtures) {
+    if (fixture.status === "upcoming") continue;
+
+    // Match fixture to our internal match by team names
+    const match = MATCHES.find(
+      (m) =>
+        normalize(fixture.homeTeam) === normalize(m.homeTeam.name) &&
+        normalize(fixture.awayTeam) === normalize(m.awayTeam.name),
+    );
+    if (!match) continue;
+
+    // Protect results already loaded manually by admin
+    if (alreadyFinished.has(match.id)) continue;
+
+    await admin
+      .from("match_results")
+      .upsert(
+        {
+          match_id: match.id,
+          home_score: fixture.homeScore ?? 0,
+          away_score: fixture.awayScore ?? 0,
+          status: fixture.status,
+          minute: fixture.minute,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "match_id" },
+      );
+  }
+}
+
 function mapStatus(short: string): LiveFixture["status"] {
   if (["TBD", "NS"].includes(short)) return "upcoming";
   if (["FT", "AET", "PEN", "AWD", "WO"].includes(short)) return "finished";
   return "live"; // 1H, HT, 2H, ET, BT, P, INT, SUSP, etc.
+}
+
+function normalize(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim();
 }

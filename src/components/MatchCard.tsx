@@ -27,7 +27,7 @@ interface MatchCardProps {
 export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCardProps) {
   const matchDate = new Date(match.date);
   const now = new Date();
-  const deadlineDate = new Date(matchDate.getTime() - 30 * 60 * 1000);
+  const deadlineDate = new Date(matchDate.getTime() - 5 * 60 * 1000);
   const isPastDeadline = now >= deadlineDate;
   const isFinished = match.status === "finished";
   const isLive = match.status === "live";
@@ -134,8 +134,8 @@ export function MatchCard({ match, prediction, onPredict, index = 0 }: MatchCard
         </div>
       </div>
 
-      {/* Pronósticos de todos — visible en vivo o terminado */}
-      {(isLive || isFinished) && (
+      {/* Pronósticos de todos — visible desde que cierra el ingreso */}
+      {isPastDeadline && (
         <AllPredictions matchId={match.id} isFinished={isFinished} />
       )}
 
