@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { WorldCupTrophy } from "@/components/WorldCupTrophy";
+import { RealtimeRefresh } from "@/components/RealtimeRefresh";
 import { Trophy, Zap, Star, Users, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MATCHES } from "@/lib/data/matches";
@@ -90,6 +91,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <RealtimeRefresh />
       <Navbar />
 
       {/* Hero banner */}
