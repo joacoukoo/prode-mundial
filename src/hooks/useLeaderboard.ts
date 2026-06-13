@@ -23,13 +23,13 @@ export function useLeaderboard() {
   useEffect(() => {
     fetchLeaderboard();
 
-    // Real-time: refresh whenever profiles table changes
+    // Listen to match_results (known to work) and refetch after trigger runs
     const channel = supabase
       .channel("leaderboard")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => fetchLeaderboard(),
+        { event: "*", schema: "public", table: "match_results" },
+        () => { setTimeout(() => fetchLeaderboard(), 1500); },
       )
       .subscribe();
 
