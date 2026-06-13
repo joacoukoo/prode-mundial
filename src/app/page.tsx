@@ -28,31 +28,36 @@ export default async function HomePage() {
 
   const finishedMatchIds = new Set((finishedResults ?? []).map((r) => r.match_id));
 
-  // Determine latest matchday with finished matches
-  const matchdayOf: Record<string, number> = {};
-  MATCHES.forEach((m) => { matchdayOf[m.id] = m.matchday; });
+  // Convert a UTC ISO date to Guatemala date string (UTC-6)
+  function toGTDate(iso: string) {
+    const d = new Date(new Date(iso).getTime() - 6 * 60 * 60 * 1000);
+    return d.toISOString().split("T")[0];
+  }
 
-  const finishedMatchdays = [...finishedMatchIds]
-    .map((id) => matchdayOf[id])
-    .filter(Boolean);
-  const currentMatchday = finishedMatchdays.length > 0
-    ? Math.max(...finishedMatchdays)
-    : null;
+  // Find the most recent day (GT) that has at least one finished match
+  const dayOf: Record<string, string> = {};
+  MATCHES.forEach((m) => { dayOf[m.id] = toGTDate(m.date); });
 
-  // IDs of finished matches in the current matchday
-  const currentMatchdayIds = currentMatchday
-    ? MATCHES.filter((m) => m.matchday === currentMatchday && finishedMatchIds.has(m.id)).map((m) => m.id)
+  const finishedDays = [...finishedMatchIds]
+    .map((id) => dayOf[id])
+    .filter(Boolean)
+    .sort();
+  const currentDay = finishedDays.length > 0 ? finishedDays[finishedDays.length - 1] : null;
+
+  // IDs of finished matches on that day
+  const currentDayMatchIds = currentDay
+    ? MATCHES.filter((m) => dayOf[m.id] === currentDay && finishedMatchIds.has(m.id)).map((m) => m.id)
     : [];
 
   // Estrella de la Jornada — player with most points in current matchday
   type StarPlayer = { displayName: string; avatarColor: string; avatarUrl: string | null; points: number };
   let star: StarPlayer | null = null;
 
-  if (currentMatchdayIds.length > 0) {
+  if (currentDayMatchIds.length > 0) {
     const { data: preds } = await supabase
       .from("predictions")
       .select("user_id, points, profiles(display_name, avatar_color, avatar_url)")
-      .in("match_id", currentMatchdayIds)
+      .in("match_id", currentDayMatchIds)
       .not("points", "is", null);
 
     const byUser: Record<string, StarPlayer> = {};
@@ -167,7 +172,7 @@ export default async function HomePage() {
         </div>
         <div className="flex flex-col gap-6">
           <PotCard pot={pot} count={count ?? 0} />
-          <BestOfRound star={star} matchday={currentMatchday} totalMatches={currentMatchdayIds.length} />
+          <BestOfRound star={star} day={currentDay} totalMatches={currentDayMatchIds.length} />
           <QuickStats
             exactos={totalExactos}
             ganadores={totalGanadores}
@@ -221,17 +226,21 @@ function PotCard({ pot, count }: { pot: number; count: number }) {
 }
 
 function BestOfRound({
-  star, matchday, totalMatches,
+  star, day, totalMatches,
 }: {
   star: { displayName: string; avatarColor: string; avatarUrl: string | null; points: number } | null;
-  matchday: number | null;
+  day: string | null;
   totalMatches: number;
 }) {
+  const dayLabel = day
+    ? new Date(day + "T12:00:00").toLocaleDateString("es-GT", { weekday: "long", day: "numeric", month: "short" })
+    : null;
+
   return (
     <div className="glass rounded-2xl border border-border p-5">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">⭐</span>
-        <h3 className="font-heading font-bold text-lg">Estrella de la Jornada</h3>
+        <h3 className="font-heading font-bold text-lg">Estrella del Día</h3>
       </div>
       {!star ? (
         <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
@@ -240,8 +249,8 @@ function BestOfRound({
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <p className="text-xs text-muted-foreground">
-            Jornada {matchday} · {totalMatches} {totalMatches === 1 ? "partido jugado" : "partidos jugados"}
+          <p className="text-xs text-muted-foreground capitalize">
+            {dayLabel} · {totalMatches} {totalMatches === 1 ? "partido" : "partidos"}
           </p>
           <div className="flex flex-col items-center gap-2">
             <div
