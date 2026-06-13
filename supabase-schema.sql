@@ -92,14 +92,7 @@ drop policy if exists "Pronósticos públicos al terminar el partido" on public.
 create policy "Usuario gestiona sus pronósticos"
   on public.predictions for all using (auth.uid() = user_id);
 create policy "Pronósticos públicos al terminar el partido"
-  on public.predictions for select using (
-    auth.uid() = user_id
-    or exists (
-      select 1 from public.match_results mr
-      where mr.match_id = predictions.match_id
-        and mr.status in ('live', 'finished')
-    )
-  );
+  on public.predictions for select using (true);
 
 -- Resultados: solo lectura pública; escritura solo desde service role (API)
 drop policy if exists "Resultados visibles para todos" on public.match_results;
