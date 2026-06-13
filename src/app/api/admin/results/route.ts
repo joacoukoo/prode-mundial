@@ -32,13 +32,7 @@ export async function POST(req: Request) {
   const { error } = await admin
     .from("match_results")
     .upsert(
-      {
-        match_id,
-        home_score,
-        away_score,
-        status,
-        updated_at: new Date().toISOString(),
-      },
+      { match_id, home_score, away_score, status },
       { onConflict: "match_id" },
     );
 

@@ -116,7 +116,6 @@ async function persistToSupabase(fixtures: LiveFixture[]) {
           away_score: fixture.awayScore ?? 0,
           status: fixture.status,
           minute: fixture.minute,
-          updated_at: new Date().toISOString(),
         },
         { onConflict: "match_id" },
       );
