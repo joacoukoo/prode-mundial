@@ -51,10 +51,11 @@ export default function PartidosPage() {
   const { matches: liveMatches, isLiveNow, apiConfigured, lastUpdate } = useLiveMatches(MATCHES);
   const userTZ = useUserTimezone();
 
-  const filteredMatches =
+  const filteredMatches = (
     activeFilter === "jornada"
       ? liveMatches.filter((m) => m.matchday === selectedMatchday)
-      : liveMatches.filter((m) => m.group === selectedGroup);
+      : liveMatches.filter((m) => m.group === selectedGroup)
+  ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const groupTeams = getTeamsByGroup(selectedGroup);
 
