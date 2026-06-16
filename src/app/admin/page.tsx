@@ -57,14 +57,15 @@ export default function AdminPage() {
   }
 
   async function togglePaid(playerId: string, currentPaid: boolean) {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("profiles")
-      .update({ paid: !currentPaid })
-      .eq("id", playerId);
-    if (!error) {
+    const newPaid = !currentPaid;
+    const res = await fetch("/api/admin/toggle-paid", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, paid: newPaid }),
+    });
+    if (res.ok) {
       setPlayers((prev) =>
-        prev.map((p) => (p.id === playerId ? { ...p, paid: !currentPaid } : p))
+        prev.map((p) => (p.id === playerId ? { ...p, paid: newPaid } : p))
       );
     }
   }
