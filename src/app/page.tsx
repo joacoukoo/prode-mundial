@@ -178,6 +178,7 @@ export default async function HomePage() {
             ganadores={totalGanadores}
             partidosJugados={totalPartidosJugados}
             pctExactos={pctExactos}
+            puntosEnJuego={(72 - totalPartidosJugados) * 5}
           />
           <ScoringGuide />
         </div>
@@ -275,9 +276,9 @@ function BestOfRound({
 }
 
 function QuickStats({
-  exactos, ganadores, partidosJugados, pctExactos,
+  exactos, ganadores, partidosJugados, pctExactos, puntosEnJuego,
 }: {
-  exactos: number; ganadores: number; partidosJugados: number; pctExactos: number;
+  exactos: number; ganadores: number; partidosJugados: number; pctExactos: number; puntosEnJuego: number;
 }) {
   if (partidosJugados === 0) {
     return (
@@ -299,6 +300,7 @@ function QuickStats({
         <StatRow icon="✅" label="Ganadores totales" value={String(ganadores)} sub="resultado correcto sin exacto" />
         <StatRow icon="⚽" label="Partidos jugados" value={`${partidosJugados}/72`} sub="fase de grupos" />
         <StatRow icon="📈" label="% de exactos" value={`${pctExactos}%`} sub="del total de pronósticos" />
+        <StatRow icon="⚡" label="Puntos en juego" value={`${puntosEnJuego}`} sub="máx restantes por partido" />
       </div>
     </div>
   );
