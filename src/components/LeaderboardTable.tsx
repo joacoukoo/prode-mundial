@@ -6,7 +6,9 @@ import { useState } from "react";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { DonkeyFace } from "./DonkeyFace";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
+import { useLiveMatches } from "@/hooks/useLiveMatches";
 import { useAuth } from "@/context/AuthContext";
+import { MATCHES } from "@/lib/data/matches";
 import type { Profile } from "@/lib/supabase/types";
 
 const TOTAL_MATCHES = 72;
@@ -21,7 +23,8 @@ const MEDAL = ["🥇", "🥈", "🥉"];
 const AVATAR_SIZE = 44;
 
 export function LeaderboardTable() {
-  const { players, loading } = useLeaderboard();
+  const { matches: liveMatches } = useLiveMatches(MATCHES);
+  const { players, loading, hasLive } = useLeaderboard(liveMatches);
   const { profile: me } = useAuth();
   const [showElimInfo, setShowElimInfo] = useState(false);
 
@@ -58,9 +61,17 @@ export function LeaderboardTable() {
           </div>
           <div>
             <h2 className="font-heading font-bold text-xl">Tabla de Posiciones</h2>
-            <p className="text-muted-foreground text-sm">
-              Fase de grupos · {players.length} participantes
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-muted-foreground text-sm">
+                Fase de grupos · {players.length} participantes
+              </p>
+              {hasLive && (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full border border-green-400/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 live-dot" />
+                  EN VIVO
+                </span>
+              )}
+            </div>
           </div>
         </div>
         {eliminatedCount > 0 && (
@@ -99,6 +110,8 @@ export function LeaderboardTable() {
           const isTop3 = rank <= 3;
           const elim = isEliminated(player, leaderPoints);
           const isMe = player.id === me?.id;
+          const livePoints = (player as Profile & { livePoints?: number }).livePoints ?? 0;
+          const displayPoints = player.total_points + livePoints;
           const maxPossible = player.total_points + (TOTAL_MATCHES - player.matches_played) * POINTS_PER_EXACT;
           const remainingPoints = maxPossible - player.total_points;
           const prev = player.previous_rank;
@@ -211,12 +224,15 @@ export function LeaderboardTable() {
               </div>
               <div className="text-center">
                 <span className={`font-heading font-bold text-base ${rank === 1 ? "text-gold-gradient" : isLast ? "text-amber-500" : elim ? "text-muted-foreground/40" : ""}`}>
-                  {player.total_points}
+                  {displayPoints}
                 </span>
+                {hasLive && livePoints > 0 && (
+                  <p className="text-[10px] text-green-400/80 leading-none font-semibold">+{livePoints} 🔴</p>
+                )}
                 {elim && !isLast && (
                   <p className="text-[10px] text-orange-400/50 leading-none">máx {maxPossible}</p>
                 )}
-                {!elim && remainingPoints > 0 && (
+                {!elim && !hasLive && remainingPoints > 0 && (
                   <p className="text-[10px] text-muted-foreground/50 leading-none">+{remainingPoints}</p>
                 )}
               </div>
