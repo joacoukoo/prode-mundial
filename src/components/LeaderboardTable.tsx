@@ -188,7 +188,7 @@ export function LeaderboardTable() {
                     {player.country && (
                       <span className={`fi fi-${player.country} flex-shrink-0`} style={{ fontSize: 14, borderRadius: 2, display: "inline-block", verticalAlign: "middle", lineHeight: 1 }} />
                     )}
-                    <p className={`font-semibold text-sm truncate leading-tight ${elim && !isLast ? "line-through decoration-orange-500/50 text-muted-foreground/60" : ""}`}>
+                    <p className={`font-semibold text-sm truncate leading-tight ${elim && !isLast ? "line-through decoration-orange-500/50 text-muted-foreground/60" : rank === 1 ? "text-gold-gradient" : ""}`}>
                       {player.display_name}
                       {isMe && <span className="ml-1 text-primary opacity-70">(vos)</span>}
                     </p>
