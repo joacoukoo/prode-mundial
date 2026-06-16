@@ -141,6 +141,26 @@
   background-clip: text;
 }
 
+.text-gold-glow {
+  background: linear-gradient(90deg, #c49a0a 0%, #ffe566 25%, #fff0a0 50%, #ffe566 75%, #c49a0a 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 2.5s linear infinite, gold-glow-pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(247, 194, 42, 0.7));
+}
+
+@keyframes gold-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes gold-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(247, 194, 42, 0.5)); }
+  50%       { filter: drop-shadow(0 0 12px rgba(247, 194, 42, 1)); }
+}
+
 .text-green-gradient {
   background: linear-gradient(128deg, #80ffb0 0%, #22e572 100%);
   -webkit-background-clip: text;
