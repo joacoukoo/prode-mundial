@@ -46,14 +46,14 @@ export const MATCHES: Match[] = [
   m(13, "bra", "mar", "C", 1, "2026-06-13T22:00:00Z", "MetLife Stadium",          "Nueva York"),
   m(14, "hai", "sco", "C", 1, "2026-06-14T01:00:00Z", "Gillette Stadium",         "Foxborough"),
   m(15, "sco", "mar", "C", 2, "2026-06-19T22:00:00Z", "Gillette Stadium",         "Foxborough"),
-  m(16, "bra", "hai", "C", 2, "2026-06-20T01:00:00Z", "Lincoln Financial Field",  "Filadelfia"),
+  m(16, "bra", "hai", "C", 2, "2026-06-20T00:30:00Z", "Lincoln Financial Field",  "Filadelfia"),
   m(17, "sco", "bra", "C", 3, "2026-06-24T22:00:00Z", "Hard Rock Stadium",        "Miami"),
   m(18, "mar", "hai", "C", 3, "2026-06-24T22:00:00Z", "Mercedes-Benz Stadium",    "Atlanta"),
 
   // ── Grupo D ────────────────────────────────────────────────────────────────
   m(19, "usa", "par", "D", 1, "2026-06-13T01:00:00Z", "SoFi Stadium",             "Los Ángeles"),
   m(20, "aus", "tur", "D", 1, "2026-06-14T04:00:00Z", "BC Place",                 "Vancouver"),
-  m(21, "tur", "par", "D", 2, "2026-06-19T04:00:00Z", "Levi's Stadium",           "Santa Clara"),
+  m(21, "tur", "par", "D", 2, "2026-06-20T04:00:00Z", "Levi's Stadium",           "Santa Clara"),
   m(22, "usa", "aus", "D", 2, "2026-06-19T19:00:00Z", "Lumen Field",              "Seattle"),
   m(23, "tur", "usa", "D", 3, "2026-06-26T02:00:00Z", "SoFi Stadium",             "Los Ángeles"),
   m(24, "par", "aus", "D", 3, "2026-06-26T02:00:00Z", "Levi's Stadium",           "Santa Clara"),
@@ -69,10 +69,10 @@ export const MATCHES: Match[] = [
   // ── Grupo F ────────────────────────────────────────────────────────────────
   m(31, "ned", "jpn", "F", 1, "2026-06-14T20:00:00Z", "AT&T Stadium",             "Arlington"),
   m(32, "swe", "tun", "F", 1, "2026-06-15T02:00:00Z", "Estadio BBVA",             "Monterrey"),
-  m(33, "jpn", "tun", "F", 2, "2026-06-20T04:00:00Z", "Estadio BBVA",             "Monterrey"),
+  m(33, "jpn", "tun", "F", 2, "2026-06-21T04:00:00Z", "Estadio BBVA",             "Monterrey"),
   m(34, "ned", "swe", "F", 2, "2026-06-20T17:00:00Z", "NRG Stadium",              "Houston"),
-  m(35, "tun", "ned", "F", 3, "2026-06-25T23:00:00Z", "AT&T Stadium",             "Arlington"),
-  m(36, "jpn", "swe", "F", 3, "2026-06-25T23:00:00Z", "Arrowhead Stadium",        "Kansas City"),
+  m(35, "tun", "ned", "F", 3, "2026-06-25T23:00:00Z", "Arrowhead Stadium",        "Kansas City"),
+  m(36, "jpn", "swe", "F", 3, "2026-06-25T23:00:00Z", "AT&T Stadium",             "Arlington"),
 
   // ── Grupo G ────────────────────────────────────────────────────────────────
   m(37, "bel", "egy", "G", 1, "2026-06-15T19:00:00Z", "Lumen Field",              "Seattle"),
@@ -99,7 +99,7 @@ export const MATCHES: Match[] = [
   m(54, "sen", "irq", "I", 3, "2026-06-26T19:00:00Z", "BMO Field",                "Toronto"),
 
   // ── Grupo J ────────────────────────────────────────────────────────────────
-  m(55, "aut", "jor", "J", 1, "2026-06-16T04:00:00Z", "Levi's Stadium",           "Santa Clara"),
+  m(55, "aut", "jor", "J", 1, "2026-06-17T04:00:00Z", "Levi's Stadium",           "Santa Clara"),
   m(56, "arg", "alg", "J", 1, "2026-06-17T01:00:00Z", "Arrowhead Stadium",        "Kansas City"),
   m(57, "arg", "aut", "J", 2, "2026-06-22T17:00:00Z", "AT&T Stadium",             "Arlington"),
   m(58, "jor", "alg", "J", 2, "2026-06-23T03:00:00Z", "Levi's Stadium",           "Santa Clara"),
