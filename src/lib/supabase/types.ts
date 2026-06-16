@@ -20,6 +20,7 @@ export interface Database {
           correct_results: number;
           correct_winners: number;
           matches_played: number;
+          previous_rank: number | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at">;

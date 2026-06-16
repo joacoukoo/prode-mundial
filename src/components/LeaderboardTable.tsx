@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Star, Target, Info, Loader2 } from "lucide-react";
+import { Trophy, Star, Target, Info, Loader2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { DonkeyFace } from "./DonkeyFace";
@@ -100,6 +100,9 @@ export function LeaderboardTable() {
           const elim = isEliminated(player, leaderPoints);
           const isMe = player.id === me?.id;
           const maxPossible = player.total_points + (TOTAL_MATCHES - player.matches_played) * POINTS_PER_EXACT;
+          const remainingPoints = maxPossible - player.total_points;
+          const prev = player.previous_rank;
+          const rankDelta = prev === null ? null : prev - rank;
 
           const rowBg =
             rank === 1 ? "leaderboard-row-1" :
@@ -120,12 +123,17 @@ export function LeaderboardTable() {
               `}
             >
               {/* Rank */}
-              <div className="flex items-center justify-center h-8">
+              <div className="flex flex-col items-center justify-center h-8 gap-0">
                 {isTop3 ? (
                   <span className="text-xl">{MEDAL[rank - 1]}</span>
                 ) : (
                   <span className={`text-sm font-mono font-semibold ${isLast ? "text-amber-500" : elim ? "text-muted-foreground/40" : "text-muted-foreground"}`}>
                     {rank}
+                  </span>
+                )}
+                {rankDelta !== null && (
+                  <span className={`text-[9px] leading-none font-bold ${rankDelta > 0 ? "text-green-400" : rankDelta < 0 ? "text-red-400" : "text-muted-foreground/40"}`}>
+                    {rankDelta > 0 ? "▲" : rankDelta < 0 ? "▼" : "—"}
                   </span>
                 )}
               </div>
@@ -171,6 +179,9 @@ export function LeaderboardTable() {
                       {player.display_name}
                       {isMe && <span className="ml-1 text-primary opacity-70">(vos)</span>}
                     </p>
+                    {player.paid && (
+                      <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />
+                    )}
                     {player.is_admin && (
                       <>
                         <span className="text-xs text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded-full border border-amber-700/40 hidden sm:inline whitespace-nowrap flex-shrink-0">Admin</span>
@@ -204,6 +215,9 @@ export function LeaderboardTable() {
                 </span>
                 {elim && !isLast && (
                   <p className="text-[10px] text-orange-400/50 leading-none">máx {maxPossible}</p>
+                )}
+                {!elim && remainingPoints > 0 && (
+                  <p className="text-[10px] text-muted-foreground/50 leading-none">+{remainingPoints}</p>
                 )}
               </div>
             </motion.div>
