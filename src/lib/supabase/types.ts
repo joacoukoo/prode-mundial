@@ -23,7 +23,7 @@ export interface Database {
           previous_rank: number | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at">;
+        Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at" | "previous_rank"> & { previous_rank?: number | null };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: never[];
       };
