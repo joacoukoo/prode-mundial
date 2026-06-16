@@ -145,8 +145,8 @@ export function LeaderboardTable() {
                   </span>
                 )}
                 {rankDelta !== null && (
-                  <span className={`text-[9px] leading-none font-bold ${rankDelta > 0 ? "text-green-400" : rankDelta < 0 ? "text-red-400" : "text-muted-foreground/40"}`}>
-                    {rankDelta > 0 ? "▲" : rankDelta < 0 ? "▼" : "—"}
+                  <span className={`text-[11px] leading-none font-bold ${rankDelta > 0 ? "text-green-400" : rankDelta < 0 ? "text-red-400" : "text-muted-foreground/30"}`}>
+                    {rankDelta > 0 ? `▲${rankDelta}` : rankDelta < 0 ? `▼${Math.abs(rankDelta)}` : "—"}
                   </span>
                 )}
               </div>
@@ -227,7 +227,10 @@ export function LeaderboardTable() {
                   {displayPoints}
                 </span>
                 {hasLive && livePoints > 0 && (
-                  <p className="text-[10px] text-green-400/80 leading-none font-semibold">+{livePoints} 🔴</p>
+                  <p className="text-[10px] text-green-400/80 leading-none font-semibold flex items-center justify-center gap-1">
+                    +{livePoints}
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 live-dot inline-block" />
+                  </p>
                 )}
                 {elim && !isLast && (
                   <p className="text-[10px] text-orange-400/50 leading-none">máx {maxPossible}</p>
