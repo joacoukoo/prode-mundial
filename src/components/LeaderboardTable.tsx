@@ -232,9 +232,6 @@ export function LeaderboardTable() {
                 {elim && !isLast && (
                   <p className="text-[10px] text-orange-400/50 leading-none">máx {maxPossible}</p>
                 )}
-                {!elim && !hasLive && remainingPoints > 0 && (
-                  <p className="text-[10px] text-muted-foreground/50 leading-none">+{remainingPoints}</p>
-                )}
               </div>
             </motion.div>
           );
