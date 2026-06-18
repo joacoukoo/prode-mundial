@@ -255,11 +255,9 @@ function BestOfRound({
           <p className="text-xs text-muted-foreground capitalize">
             {dayLabel} · {totalMatches} {totalMatches === 1 ? "partido" : "partidos"}
           </p>
-          <div className="flex flex-col items-center gap-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/mvp-trophy.png" alt="Trofeo MVP" className="w-11 h-14 object-contain -mb-2 drop-shadow-[0_0_12px_rgba(240,180,41,0.35)]" />
+          <div className="flex flex-col items-center gap-3">
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl ring-2 ring-primary overflow-hidden"
+              className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl ring-2 ring-primary overflow-hidden flex-shrink-0"
               style={{ background: star.avatarUrl ? "transparent" : star.avatarColor }}
             >
               {star.avatarUrl
@@ -268,9 +266,13 @@ function BestOfRound({
                 : star.displayName.slice(0, 2).toUpperCase()
               }
             </div>
-            <div className="text-center mt-2">
-              <p className="font-heading font-bold text-base">{star.displayName}</p>
-              <p className="text-primary font-heading font-bold text-2xl">+{star.points} pts</p>
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/mvp-trophy.png" alt="Trofeo MVP" className="h-20 w-auto object-contain drop-shadow-[0_0_16px_rgba(240,180,41,0.4)] flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-heading font-bold text-base leading-tight">{star.displayName}</p>
+                <p className="text-primary font-heading font-bold text-2xl leading-tight">+{star.points} pts</p>
+              </div>
             </div>
           </div>
         </div>
