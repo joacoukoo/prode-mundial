@@ -51,6 +51,15 @@ export default function PartidosPage() {
   const { matches: liveMatches, isLiveNow, apiConfigured, lastUpdate } = useLiveMatches(MATCHES);
   const userTZ = useUserTimezone();
 
+  // Deep link desde la home: /partidos?jornada=2 abre directo en esa jornada
+  useEffect(() => {
+    const jornada = parseInt(new URLSearchParams(window.location.search).get("jornada") ?? "", 10);
+    if (MATCHDAYS.includes(jornada)) {
+      setActiveFilter("jornada");
+      setSelectedMatchday(jornada);
+    }
+  }, []);
+
   const filteredMatches = (
     activeFilter === "jornada"
       ? liveMatches.filter((m) => m.matchday === selectedMatchday)

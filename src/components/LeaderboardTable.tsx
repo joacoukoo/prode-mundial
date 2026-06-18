@@ -6,10 +6,9 @@ import { useState } from "react";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { DonkeyFace } from "./DonkeyFace";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import { useLiveMatches } from "@/hooks/useLiveMatches";
 import { useAuth } from "@/context/AuthContext";
-import { MATCHES } from "@/lib/data/matches";
 import type { Profile } from "@/lib/supabase/types";
+import type { Match } from "@/lib/types";
 
 const TOTAL_MATCHES = 72;
 const POINTS_PER_EXACT = 5;
@@ -22,9 +21,8 @@ function isEliminated(player: Profile, leaderPoints: number): boolean {
 const MEDAL = ["🥇", "🥈", "🥉"];
 const AVATAR_SIZE = 44;
 
-export function LeaderboardTable() {
-  const { matches: liveMatches } = useLiveMatches(MATCHES);
-  const { players, loading, hasLive } = useLeaderboard(liveMatches);
+export function LeaderboardTable({ matches }: { matches: Match[] }) {
+  const { players, loading, hasLive } = useLeaderboard(matches);
   const { profile: me } = useAuth();
   const [showElimInfo, setShowElimInfo] = useState(false);
 
