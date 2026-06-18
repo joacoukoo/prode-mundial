@@ -49,7 +49,7 @@ export default async function HomePage() {
     ? MATCHES.filter((m) => dayOf[m.id] === currentDay && finishedMatchIds.has(m.id)).map((m) => m.id)
     : [];
 
-  // Estrella de la Jornada — player with most points in current matchday
+  // MVP de la Jornada — player with most points in current matchday
   type StarPlayer = { displayName: string; avatarColor: string; avatarUrl: string | null; points: number };
   let star: StarPlayer | null = null;
 
@@ -240,12 +240,14 @@ function BestOfRound({
   return (
     <div className="glass rounded-2xl border border-border p-5">
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-2xl">⭐</span>
-        <h3 className="font-heading font-bold text-lg">Estrella del Día</h3>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/mvp-trophy.png" alt="" className="w-6 h-8 object-contain" />
+        <h3 className="font-heading font-bold text-lg">MVP de la Jornada</h3>
       </div>
       {!star ? (
         <div className="flex flex-col items-center justify-center py-4 gap-2 text-center">
-          <span className="text-3xl">🏆</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/mvp-trophy.png" alt="" className="w-14 h-[72px] object-contain opacity-40" />
           <p className="text-sm text-muted-foreground">Disponible cuando terminen los primeros partidos</p>
         </div>
       ) : (
@@ -253,7 +255,9 @@ function BestOfRound({
           <p className="text-xs text-muted-foreground capitalize">
             {dayLabel} · {totalMatches} {totalMatches === 1 ? "partido" : "partidos"}
           </p>
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/mvp-trophy.png" alt="Trofeo MVP" className="w-11 h-14 object-contain -mb-2 drop-shadow-[0_0_12px_rgba(240,180,41,0.35)]" />
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl ring-2 ring-primary overflow-hidden"
               style={{ background: star.avatarUrl ? "transparent" : star.avatarColor }}
@@ -264,7 +268,7 @@ function BestOfRound({
                 : star.displayName.slice(0, 2).toUpperCase()
               }
             </div>
-            <div className="text-center">
+            <div className="text-center mt-2">
               <p className="font-heading font-bold text-base">{star.displayName}</p>
               <p className="text-primary font-heading font-bold text-2xl">+{star.points} pts</p>
             </div>
