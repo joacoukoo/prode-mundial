@@ -112,7 +112,7 @@ export default function PartidosPage() {
                 </div>
               )
             ) : (
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400/70 bg-orange-900/10 border border-orange-800/20 px-3 py-1.5 rounded-full" title="Configurá API_FOOTBALL_KEY en .env.local">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400/70 bg-orange-900/10 border border-orange-800/20 px-3 py-1.5 rounded-full" title="Configurá FOOTBALL_DATA_API_KEY en .env.local">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-400/50" />
                 Sin API de resultados
               </div>

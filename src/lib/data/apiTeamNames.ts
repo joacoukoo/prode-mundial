@@ -1,5 +1,7 @@
-// English team names as returned by API-Football
-// Used to match live fixture data against our internal team IDs
+// English display names for each team, used as a shared key between
+// /api/live and useLiveMatches to merge live fixtures into our match list.
+// Not tied to any external API's naming — matching against football-data.org
+// happens via team code (tla), not these strings.
 export const API_TEAM_NAMES: Record<string, string> = {
   mex: "Mexico",
   kor: "South Korea",

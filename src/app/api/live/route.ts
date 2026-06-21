@@ -3,17 +3,32 @@ import { MATCHES } from "@/lib/data/matches";
 import { API_TEAM_NAMES } from "@/lib/data/apiTeamNames";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// worldcup26.ir — free, no API key required, live scores for 2026.
-// It's unreliable (frequent connection resets / 500s, and successful
-// responses can take ~15s), so this route needs extra headroom plus
-// retries — see fetchGamesWithRetry. Worst case (all attempts time out)
-// must stay comfortably under maxDuration.
-export const maxDuration = 45;
+// football-data.org — free tier includes the World Cup (10 req/min).
+// `next.revalidate` dedupes concurrent polls across users/instances so we
+// stay well under that limit regardless of how many people are online.
+export const maxDuration = 20;
 
-const WC_API_URL = "https://worldcup26.ir/get/games";
+const FD_API_URL = "https://api.football-data.org/v4/competitions/WC/matches";
 const FETCH_ATTEMPTS = 2;
-const FETCH_TIMEOUT_MS = 14_000;
+const FETCH_TIMEOUT_MS = 8_000;
 const RETRY_DELAY_MS = 300;
+const REVALIDATE_SECONDS = 20;
+
+// football-data.org team codes (tla) match our internal team ids 1:1 in
+// uppercase, except Curaçao (CUW, not "CUR").
+const TLA_OVERRIDES: Record<string, string> = { cur: "CUW" };
+function tlaFor(teamId: string) {
+  return TLA_OVERRIDES[teamId] ?? teamId.toUpperCase();
+}
+
+interface FDMatch {
+  id: number;
+  utcDate: string;
+  status: string;
+  homeTeam: { tla: string; name: string };
+  awayTeam: { tla: string; name: string };
+  score: { fullTime: { home: number | null; away: number | null } };
+}
 
 export interface LiveFixture {
   id: number;
@@ -27,27 +42,20 @@ export interface LiveFixture {
 }
 
 export async function GET() {
-  try {
-    const games = await fetchGamesWithRetry();
+  if (!process.env.FOOTBALL_DATA_API_KEY) {
+    return NextResponse.json({ fixtures: [], configured: false, error: "FOOTBALL_DATA_API_KEY no configurada" });
+  }
 
-    if (!games) {
+  try {
+    const apiMatches = await fetchMatchesWithRetry();
+
+    if (!apiMatches) {
       console.warn("[/api/live] upstream unavailable after retries, falling back to last known results");
       const fixtures = await loadFixturesFromSupabase();
       return NextResponse.json({ fixtures, configured: true, stale: true });
     }
 
-    const fixtures: LiveFixture[] = games
-    .filter((g) => g.home_team_name_en && g.away_team_name_en)
-    .map((g) => ({
-      id:        parseInt(g.id, 10),
-      homeTeam:  g.home_team_name_en,
-      awayTeam:  g.away_team_name_en,
-      homeScore: g.home_score && g.home_score !== "null" ? parseInt(g.home_score, 10) : null,
-      awayScore: g.away_score && g.away_score !== "null" ? parseInt(g.away_score, 10) : null,
-      status:    mapStatus(g.finished, g.time_elapsed),
-      minute:    parseMinute(g.time_elapsed),
-      date:      localDateToISO(g.local_date),
-    }));
+    const fixtures = buildFixtures(apiMatches);
 
     const liveCount = fixtures.filter((f) => f.status === "live").length;
     const finishedCount = fixtures.filter((f) => f.status === "finished").length;
@@ -62,19 +70,23 @@ export async function GET() {
   }
 }
 
-// worldcup26.ir resets connections or 500s on a large fraction of requests.
-// Retry a few times with a short per-attempt timeout before giving up.
-async function fetchGamesWithRetry(): Promise<Record<string, string>[] | null> {
+// football-data.org is a professional service, but retry anyway in case of
+// a transient blip — same pattern as the Supabase fallback below.
+async function fetchMatchesWithRetry(): Promise<FDMatch[] | null> {
   for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
       try {
-        const res = await fetch(WC_API_URL, { cache: "no-store", signal: controller.signal });
+        const res = await fetch(FD_API_URL, {
+          headers: { "X-Auth-Token": process.env.FOOTBALL_DATA_API_KEY! },
+          signal: controller.signal,
+          next: { revalidate: REVALIDATE_SECONDS },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        return json.games ?? [];
+        return json.matches ?? [];
       } finally {
         clearTimeout(timeout);
       }
@@ -86,6 +98,55 @@ async function fetchGamesWithRetry(): Promise<Record<string, string>[] | null> {
     }
   }
   return null;
+}
+
+// Match by team code (tla), not by display name — football-data.org's
+// names ("Czechia", "Bosnia-Herzegovina", "Cape Verde Islands"...) don't
+// line up with ours, but the FIFA-style codes do (except Curaçao).
+// A few fixtures come back with home/away swapped relative to our fixture
+// list (neutral-venue tournament, so "home" is just a data-entry choice) —
+// match either orientation and swap the score back if needed.
+function buildFixtures(apiMatches: FDMatch[]): LiveFixture[] {
+  const fixtures: LiveFixture[] = [];
+
+  for (const match of MATCHES) {
+    const homeTla = tlaFor(match.homeTeam.id);
+    const awayTla = tlaFor(match.awayTeam.id);
+
+    const direct = apiMatches.find((m) => m.homeTeam.tla === homeTla && m.awayTeam.tla === awayTla);
+    const reversed = direct
+      ? null
+      : apiMatches.find((m) => m.homeTeam.tla === awayTla && m.awayTeam.tla === homeTla);
+    const apiMatch = direct ?? reversed;
+    if (!apiMatch) continue;
+
+    fixtures.push({
+      id: apiMatch.id,
+      homeTeam: API_TEAM_NAMES[match.homeTeam.id] ?? match.homeTeam.name,
+      awayTeam: API_TEAM_NAMES[match.awayTeam.id] ?? match.awayTeam.name,
+      homeScore: reversed ? apiMatch.score.fullTime.away : apiMatch.score.fullTime.home,
+      awayScore: reversed ? apiMatch.score.fullTime.home : apiMatch.score.fullTime.away,
+      status: mapStatus(apiMatch.status),
+      minute: estimateMinute(apiMatch),
+      date: apiMatch.utcDate,
+    });
+  }
+
+  return fixtures;
+}
+
+function mapStatus(status: string): LiveFixture["status"] {
+  if (status === "FINISHED" || status === "AWARDED") return "finished";
+  if (status === "IN_PLAY" || status === "PAUSED") return "live";
+  return "upcoming";
+}
+
+// football-data.org doesn't expose a minute counter, so this is a rough
+// estimate from kickoff time — good enough since the UI doesn't show it yet.
+function estimateMinute(match: FDMatch): number | null {
+  if (mapStatus(match.status) !== "live") return null;
+  const elapsedMin = Math.floor((Date.now() - new Date(match.utcDate).getTime()) / 60_000);
+  return Math.max(0, Math.min(elapsedMin, 120));
 }
 
 // Fallback when the upstream API is down: serve whatever we last persisted
@@ -159,25 +220,6 @@ async function persistToSupabase(fixtures: LiveFixture[]) {
       { onConflict: "match_id" },
     );
   }
-}
-
-function mapStatus(finished: string, timeElapsed: string): LiveFixture["status"] {
-  if (finished === "TRUE") return "finished";
-  if (timeElapsed === "notstarted") return "upcoming";
-  return "live";
-}
-
-function parseMinute(timeElapsed: string): number | null {
-  if (!timeElapsed || timeElapsed === "notstarted" || timeElapsed === "finished") return null;
-  const n = parseInt(timeElapsed, 10);
-  return isNaN(n) ? null : n;
-}
-
-// "MM/DD/YYYY HH:MM" → "YYYY-MM-DDTHH:MM:00"
-function localDateToISO(localDate: string): string {
-  const [datePart, timePart] = localDate.split(" ");
-  const [month, day, year] = datePart.split("/");
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${timePart ?? "00:00"}:00`;
 }
 
 function normalize(name: string) {
