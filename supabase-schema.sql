@@ -149,19 +149,27 @@ returns trigger language plpgsql security definer as $$
 declare
   pred         record;
   pts          integer;
+  old_pts      integer;
   pred_outcome integer;
   real_outcome integer;
 begin
   -- Solo recalcular cuando el partido termina
   if new.status <> 'finished' then return new; end if;
-  -- Evitar doble-suma si el partido ya estaba finished (ej: corrección de marcador)
-  if TG_OP = 'UPDATE' and old.status = 'finished' then return new; end if;
+  -- Si ya estaba finalizado con el mismo marcador, no hay nada que recalcular
+  if TG_OP = 'UPDATE' and old.status = 'finished'
+     and old.home_score = new.home_score and old.away_score = new.away_score then
+    return new;
+  end if;
 
   real_outcome := sign(new.home_score - new.away_score);
 
   for pred in
     select * from public.predictions where match_id = new.match_id
   loop
+    -- old_pts permite corregir un marcador ya finalizado sin duplicar puntos:
+    -- se resta lo que ya se había otorgado y se suma lo que corresponde ahora
+    old_pts := coalesce(pred.points, 0);
+
     if pred.home_score = new.home_score and pred.away_score = new.away_score then
       pts := 5;
     else
@@ -175,10 +183,17 @@ begin
 
     update public.profiles
     set
-      total_points    = total_points + pts,
-      correct_results = correct_results + case when pts = 5 then 1 else 0 end,
-      correct_winners = correct_winners + case when pts = 3 then 1 else 0 end,
-      matches_played  = matches_played  + 1
+      total_points    = total_points - old_pts + pts,
+      correct_results = correct_results
+                         - case when old_pts = 5 then 1 else 0 end
+                         + case when pts = 5 then 1 else 0 end,
+      correct_winners = correct_winners
+                         - case when old_pts = 3 then 1 else 0 end
+                         + case when pts = 3 then 1 else 0 end,
+      -- matches_played solo sube la primera vez que el partido pasa a finished,
+      -- no en correcciones posteriores del marcador
+      matches_played  = matches_played
+                         + case when TG_OP = 'INSERT' or old.status <> 'finished' then 1 else 0 end
     where id = pred.user_id;
   end loop;
 
