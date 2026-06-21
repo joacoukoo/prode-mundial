@@ -3,8 +3,17 @@ import { MATCHES } from "@/lib/data/matches";
 import { API_TEAM_NAMES } from "@/lib/data/apiTeamNames";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// worldcup26.ir — free, no API key required, live scores for 2026
+// worldcup26.ir — free, no API key required, live scores for 2026.
+// It's unreliable (frequent connection resets / 500s, and successful
+// responses can take ~15s), so this route needs extra headroom plus
+// retries — see fetchGamesWithRetry. Worst case (all attempts time out)
+// must stay comfortably under maxDuration.
+export const maxDuration = 45;
+
 const WC_API_URL = "https://worldcup26.ir/get/games";
+const FETCH_ATTEMPTS = 2;
+const FETCH_TIMEOUT_MS = 14_000;
+const RETRY_DELAY_MS = 300;
 
 export interface LiveFixture {
   id: number;
@@ -19,17 +28,13 @@ export interface LiveFixture {
 
 export async function GET() {
   try {
-    const res = await fetch(WC_API_URL, { cache: "no-store" });
+    const games = await fetchGamesWithRetry();
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { fixtures: [], configured: true, error: `HTTP ${res.status}` },
-        { status: 500 },
-      );
+    if (!games) {
+      console.warn("[/api/live] upstream unavailable after retries, falling back to last known results");
+      const fixtures = await loadFixturesFromSupabase();
+      return NextResponse.json({ fixtures, configured: true, stale: true });
     }
-
-    const json = await res.json();
-    const games: Record<string, string>[] = json.games ?? [];
 
     const fixtures: LiveFixture[] = games
     .filter((g) => g.home_team_name_en && g.away_team_name_en)
@@ -55,6 +60,60 @@ export async function GET() {
     console.error("[/api/live]", err);
     return NextResponse.json({ fixtures: [], configured: true, error: String(err) }, { status: 500 });
   }
+}
+
+// worldcup26.ir resets connections or 500s on a large fraction of requests.
+// Retry a few times with a short per-attempt timeout before giving up.
+async function fetchGamesWithRetry(): Promise<Record<string, string>[] | null> {
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+      try {
+        const res = await fetch(WC_API_URL, { cache: "no-store", signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        return json.games ?? [];
+      } finally {
+        clearTimeout(timeout);
+      }
+    } catch (err) {
+      console.warn(`[/api/live] attempt ${attempt}/${FETCH_ATTEMPTS} failed: ${String(err)}`);
+      if (attempt < FETCH_ATTEMPTS) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      }
+    }
+  }
+  return null;
+}
+
+// Fallback when the upstream API is down: serve whatever we last persisted
+// so the frontend doesn't go blank, instead reflecting the last known state.
+async function loadFixturesFromSupabase(): Promise<LiveFixture[]> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
+
+  const admin = createAdminClient();
+  const { data } = await admin.from("match_results").select("*");
+  if (!data) return [];
+
+  const fixtures: LiveFixture[] = [];
+  for (const row of data) {
+    const match = MATCHES.find((m) => m.id === row.match_id);
+    if (!match) continue;
+
+    fixtures.push({
+      id:        parseInt(match.id.replace("m", ""), 10),
+      homeTeam:  API_TEAM_NAMES[match.homeTeam.id] ?? match.homeTeam.name,
+      awayTeam:  API_TEAM_NAMES[match.awayTeam.id] ?? match.awayTeam.name,
+      homeScore: row.home_score,
+      awayScore: row.away_score,
+      status:    row.status,
+      minute:    row.minute,
+      date:      match.date,
+    });
+  }
+  return fixtures;
 }
 
 async function persistToSupabase(fixtures: LiveFixture[]) {
