@@ -46,7 +46,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
   }
 
   const leaderPoints = players[0]?.total_points ?? 0;
-  const tournamentMatchesPlayed = Math.max(...players.map((p) => p.matches_played), 0);
+  const tournamentMatchesPlayed = matches.filter((m) => m.status === "finished").length;
   const lastIndex = players.length - 1;
   const eliminatedCount = players.filter((p) => isEliminated(p, leaderPoints, tournamentMatchesPlayed)).length;
 
