@@ -13,8 +13,8 @@ import type { Match } from "@/lib/types";
 const TOTAL_MATCHES = 72;
 const POINTS_PER_EXACT = 5;
 
-function isEliminated(player: Profile, leaderPoints: number): boolean {
-  const remaining = TOTAL_MATCHES - player.matches_played;
+function isEliminated(player: Profile, leaderPoints: number, tournamentMatchesPlayed: number): boolean {
+  const remaining = TOTAL_MATCHES - tournamentMatchesPlayed;
   return player.total_points + remaining * POINTS_PER_EXACT < leaderPoints;
 }
 
@@ -46,8 +46,9 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
   }
 
   const leaderPoints = players[0]?.total_points ?? 0;
+  const tournamentMatchesPlayed = Math.max(...players.map((p) => p.matches_played), 0);
   const lastIndex = players.length - 1;
-  const eliminatedCount = players.filter((p) => isEliminated(p, leaderPoints)).length;
+  const eliminatedCount = players.filter((p) => isEliminated(p, leaderPoints, tournamentMatchesPlayed)).length;
 
   return (
     <div className="w-full">
@@ -106,11 +107,11 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
           const rank = i + 1;
           const isLast = i === lastIndex && players.length > 1;
           const isTop3 = rank <= 3;
-          const elim = isEliminated(player, leaderPoints);
+          const elim = isEliminated(player, leaderPoints, tournamentMatchesPlayed);
           const isMe = player.id === me?.id;
           const livePoints = (player as Profile & { livePoints?: number }).livePoints ?? 0;
           const displayPoints = player.total_points + livePoints;
-          const maxPossible = player.total_points + (TOTAL_MATCHES - player.matches_played) * POINTS_PER_EXACT;
+          const maxPossible = player.total_points + (TOTAL_MATCHES - tournamentMatchesPlayed) * POINTS_PER_EXACT;
           const remainingPoints = maxPossible - player.total_points;
           const prev = player.previous_rank;
           const rankDelta = prev === null ? null : prev - rank;
