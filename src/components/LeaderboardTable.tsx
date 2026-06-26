@@ -120,7 +120,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
             rank === 1 ? "leaderboard-row-1" :
             rank === 2 ? "leaderboard-row-2" :
             rank === 3 ? "leaderboard-row-3" :
-            isLast     ? "bg-amber-950/20" :
+            isLast     ? `bg-amber-950/20${elim ? " opacity-60" : ""}` :
             elim       ? "opacity-60" : "";
 
           return (
@@ -175,7 +175,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
                     editable={isMe}
                   />
 
-                  {elim && !isLast && (
+                  {elim && (
                     <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center z-10">
                       <span className="text-orange-400 font-bold text-xs">✕</span>
                     </div>
@@ -187,7 +187,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
                     {player.country && (
                       <span className={`fi fi-${player.country} flex-shrink-0`} style={{ fontSize: 14, borderRadius: 2, display: "inline-block", verticalAlign: "middle", lineHeight: 1 }} />
                     )}
-                    <p className={`font-semibold text-sm truncate leading-tight ${elim && !isLast ? "line-through decoration-orange-500/50 text-muted-foreground/60" : rank === 1 ? "text-gold-glow" : ""}`}>
+                    <p className={`font-semibold text-sm truncate leading-tight ${elim ? "line-through decoration-orange-500/50 text-muted-foreground/60" : rank === 1 ? "text-gold-glow" : ""}`}>
                       {player.display_name}
                       {isMe && <span className="ml-1 text-primary opacity-70">(vos)</span>}
                     </p>
@@ -204,7 +204,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 hidden sm:inline whitespace-nowrap">líder</span>
                     )}
                     {isLast && <DonkeyFace size={30} />}
-                    {elim && !isLast && (
+                    {elim && (
                       <span className="text-xs text-orange-400/70 bg-orange-900/10 px-1.5 py-0.5 rounded-full border border-orange-800/20 hidden sm:inline whitespace-nowrap" title={`Máximo posible: ${maxPossible} pts`}>
                         sin chances
                       </span>
@@ -231,7 +231,7 @@ export function LeaderboardTable({ matches }: { matches: Match[] }) {
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 live-dot inline-block" />
                   </p>
                 )}
-                {elim && !isLast && (
+                {elim && (
                   <p className="text-[10px] text-orange-400/50 leading-none">máx {maxPossible}</p>
                 )}
               </div>
