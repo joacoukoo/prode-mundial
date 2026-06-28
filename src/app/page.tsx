@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { HomeMatchesSection } from "@/components/HomeMatchesSection";
 import { WorldCupTrophy } from "@/components/WorldCupTrophy";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
+import { WinnerModal } from "@/components/WinnerModal";
 import { Trophy, Zap, Star, Users, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MATCHES } from "@/lib/data/matches";
@@ -80,6 +81,29 @@ export default async function HomePage() {
     }
   }
 
+  // Winner (only when all 72 matches are finished)
+  const allFinished = finishedMatchIds.size >= MATCHES.length;
+  let winner: { displayName: string; avatarColor: string; avatarUrl: string | null; totalPoints: number } | null = null;
+  if (allFinished) {
+    const { data: top } = await supabase
+      .from("profiles")
+      .select("display_name, avatar_color, avatar_url, total_points")
+      .eq("is_admin", false)
+      .order("total_points", { ascending: false })
+      .order("correct_results", { ascending: false })
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+    if (top) {
+      winner = {
+        displayName: top.display_name,
+        avatarColor: top.avatar_color,
+        avatarUrl: top.avatar_url,
+        totalPoints: top.total_points,
+      };
+    }
+  }
+
   // Global stats from profiles
   const { data: profileStats } = await supabase
     .from("profiles")
@@ -97,6 +121,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <RealtimeRefresh />
+      {winner && <WinnerModal winner={winner} />}
       <Navbar />
 
       {/* Hero banner */}
