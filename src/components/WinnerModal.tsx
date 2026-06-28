@@ -53,8 +53,8 @@ export function WinnerModal({ winner }: WinnerModalProps) {
     window.addEventListener("resize", resize);
 
     function burst(x?: number, y?: number) {
-      const bx = x ?? Math.random() * canvas.width;
-      const by = y ?? 80 + Math.random() * (canvas.height * 0.55);
+      const bx = x ?? Math.random() * canvas!.width;
+      const by = y ?? 80 + Math.random() * (canvas!.height * 0.55);
       const color = COLORS[Math.floor(Math.random() * COLORS.length)];
       const count = 70 + Math.floor(Math.random() * 50);
       for (let i = 0; i < count; i++) {
