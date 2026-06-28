@@ -78,8 +78,8 @@ export function WinnerModal({ winner }: WinnerModalProps) {
     burst(canvas.width * 0.5, canvas.height * 0.2);
 
     function animate() {
-      ctx.fillStyle = "rgba(0,0,0,0.18)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx!.fillStyle = "rgba(0,0,0,0.18)";
+      ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
 
       timerRef.current++;
       if (timerRef.current % 45 === 0) burst();
@@ -91,13 +91,13 @@ export function WinnerModal({ winner }: WinnerModalProps) {
         p.vy += 0.06;
         p.vx *= 0.98;
         p.life -= 1 / p.maxLife;
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * Math.max(0.3, p.life), 0, Math.PI * 2);
-        ctx.fill();
+        ctx!.globalAlpha = Math.max(0, p.life);
+        ctx!.fillStyle = p.color;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.size * Math.max(0.3, p.life), 0, Math.PI * 2);
+        ctx!.fill();
       }
-      ctx.globalAlpha = 1;
+      ctx!.globalAlpha = 1;
       animRef.current = requestAnimationFrame(animate);
     }
 
